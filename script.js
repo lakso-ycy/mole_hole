@@ -25,65 +25,57 @@ function getRandomTime(min, max) {
 }
 
 function getRandomHole(holes) {
-  const randomIndex = Math.floor(Math.random() * holes.length);
-  const selectedHole = holes[randomIndex];
-
+  const index = Math.floor(Math.random() * holes.length);
+  const selectedHole = holes[index];
   if (selectedHole === lastHole) {
     return getRandomHole(holes);
   }
-
   lastHole = selectedHole;
   return selectedHole;
 }
 
 function makeMoleAppear(showDuration, hideDuration) {
-  const randomDuration = getRandomTime(showDuration, hideDuration);
+  const duration = getRandomTime(showDuration, hideDuration);
   const hole = getRandomHole(holes);
-
   hole.classList.add("up");
   setTimeout(() => {
     hole.classList.remove("up");
-    if (!timeUp) {
-      makeMoleAppear(showDuration, hideDuration);
-    }
-  }, randomDuration);
+    if (!timeUp) makeMoleAppear(showDuration, hideDuration);
+  }, duration);
 }
 
 function startGame() {
+  const playerName = document.getElementById("player-name").value.trim();
+  if (!playerName) {
+    alert("Masukkan nama dulu ya!");
+    return;
+  }
+
   const difficulty = getDifficultyLevel();
   let showDuration, hideDuration;
 
   switch (difficulty) {
-    case "easy":
-      showDuration = 500;
-      hideDuration = 1500;
-      break;
-    case "medium":
-      showDuration = 200;
-      hideDuration = 1000;
-      break;
-    case "hard":
-      showDuration = 100;
-      hideDuration = 800;
-      break;
-    default:
-      showDuration = 500;
-      hideDuration = 1500;
+    case "easy": showDuration = 500; hideDuration = 1500; break;
+    case "medium": showDuration = 200; hideDuration = 1000; break;
+    case "hard": showDuration = 100; hideDuration = 800; break;
+    default: showDuration = 500; hideDuration = 1500;
   }
 
-  scoreBoard.textContent = 0;
+  alert(`Selamat bermain, ${playerName}!`);
+  console.log(`Game dimulai oleh: ${playerName}`);
+
   score = 0;
+  scoreBoard.textContent = 0;
   timeUp = false;
   cancelBtn.style.display = "block";
   startBtn.style.display = "none";
   levels.style.visibility = "hidden";
 
   timerInput.value = getValidTime(timerInput.value);
-
-  const countdownInterval = setInterval(() => {
+  const countdown = setInterval(() => {
     timerInput.value--;
     if (timerInput.value <= 0) {
-      clearInterval(countdownInterval);
+      clearInterval(countdown);
       timerInput.value = 0;
       endGame();
     }
@@ -94,17 +86,16 @@ function startGame() {
 
 function endGame() {
   timeUp = true;
-  timerInput.value = 0;
-  startBtn.style.display = "block";
   cancelBtn.style.display = "none";
+  startBtn.style.display = "block";
   levels.style.visibility = "visible";
 }
 
 function handleMoleHit(e) {
-  if (!e.isTrusted) return; // Prevent fake clicks
+  if (!e.isTrusted) return;
   score++;
   this.parentNode.classList.remove("up");
   scoreBoard.textContent = score;
 }
 
-moles.forEach((mole) => mole.addEventListener("click", handleMoleHit));
+moles.forEach((mole) => mole.addEventListener("click", handleMoleHit))
