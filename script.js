@@ -16,6 +16,11 @@ const messageBoxText = document.getElementById('messageBoxText');
 const messageBoxButton = document.getElementById('messageBoxButton');
 
 const moleImageUpload = document.getElementById('mole-image-upload');
+// BARU: Seleksi tombol Hapus Foto
+const removeMoleImageBtn = document.getElementById('remove-mole-image-btn');
+
+// BARU: Simpan URL gambar tikus default dari CSS. Pastikan path ini sesuai dengan yang ada di style.css Anda.
+const defaultMoleImageUrl = 'url("img/mole.png")'; 
 
 let lastHole;
 let timeUp = false;
@@ -161,6 +166,7 @@ function startGame() {
   playerNameInput.disabled = true;
   durationButtons.forEach(button => button.disabled = true); // Disable duration buttons
   if (moleImageUpload) moleImageUpload.disabled = true; // Disable image upload during game
+  if (removeMoleImageBtn) removeMoleImageBtn.disabled = true; // Disable remove image button
 
   if (countdownInterval) { // Clear any existing timer
     clearInterval(countdownInterval);
@@ -216,6 +222,7 @@ function endGame(playerName, finalScore) {
   playerNameInput.disabled = false;
   durationButtons.forEach(button => button.disabled = false); // Re-enable duration buttons
   if (moleImageUpload) moleImageUpload.disabled = false; // Re-enable image upload
+  if (removeMoleImageBtn) removeMoleImageBtn.disabled = false; // Re-enable remove image button
   
   // Reset countdown display to the last selected duration
   const currentActiveDurationButton = document.querySelector('.duration-btn.active');
@@ -250,11 +257,36 @@ if (moleImageUpload) {
           moleEl.style.backgroundImage = `url(${newMoleImageUrl})`;
         });
         console.log("Gambar tikus diganti!"); // Log mole image changed
+        // Clear the file input value to allow selecting the same file again if needed
+        moleImageUpload.value = ''; 
       }
       reader.readAsDataURL(file); // Read the file as a data URL
     } else if (file) {
       showCustomMessage("Harap pilih file gambar (misalnya .png, .jpg, .gif)."); // "Please select an image file..."
+      moleImageUpload.value = ''; // Clear invalid file
     }
+  });
+}
+
+// BARU: Event listener untuk tombol Hapus Foto
+if (removeMoleImageBtn) {
+  removeMoleImageBtn.addEventListener('click', function() {
+    // Hanya izinkan hapus foto jika game belum dimulai atau sudah selesai
+    if (startBtn.style.display === 'none' && cancelBtn.style.display !== 'none') {
+        showCustomMessage("Tidak bisa menghapus foto saat game berlangsung.");
+        return; 
+    }
+    moles.forEach(moleEl => {
+      // Mengatur kembali ke gambar default yang didefinisikan di CSS.
+      // Ini akan menghapus style inline `backgroundImage` yang mungkin telah diterapkan.
+      moleEl.style.backgroundImage = ''; 
+    });
+    // Kosongkan input file juga
+    if (moleImageUpload) {
+        moleImageUpload.value = '';
+    }
+    console.log("Gambar tikus dikembalikan ke default.");
+    showCustomMessage("Gambar tikus telah dikembalikan ke default.");
   });
 }
 

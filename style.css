@@ -12,33 +12,40 @@ body {
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 10px;
+  padding: 10px 0; /* Padding atas-bawah untuk body */
   overflow-x: hidden; /* Mencegah scroll horizontal */
 }
 
 .container {
   width: 100%;
-  max-width: 1000px; /* Disesuaikan untuk tata letak baru */
+  max-width: 1200px; /* Lebar maksimum container untuk mengakomodasi 3 kolom */
   margin: 10px auto;
-  padding: 0 15px;
+  padding: 0 15px; /* Padding kiri-kanan untuk container */
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center; /* Memusatkan judul, input nama, level */
 }
 
 h1 {
   text-align: center;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, 3rem); /* Ukuran font adaptif */
   margin-top: 10px;
   margin-bottom: 10px;
 }
 
+.player-section { /* Wrapper untuk input nama dan tombol Start/Cancel utama */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 450px; /* Sesuaikan jika perlu */
+}
+
 .name-input {
   text-align: center;
-  margin: 10px 0;
-  animation: fadeIn 1s ease;
   width: 100%;
-  max-width: 450px;
 }
 
 .name-input input {
@@ -55,11 +62,7 @@ h1 {
   transition: all 0.3s ease-in-out;
 }
 
-.name-input input::placeholder {
-  color: #777;
-  font-style: italic;
-}
-
+.name-input input::placeholder { color: #777; font-style: italic; }
 .name-input input:focus {
   outline: none;
   box-shadow: 0 0 18px #28a745;
@@ -67,213 +70,207 @@ h1 {
   transform: scale(1.03);
 }
 
+.action-buttons.main-action-buttons { /* Tombol Start/Cancel utama */
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.action-buttons.main-action-buttons .controls-content {
+    flex-grow: 0; /* Agar tombol tidak meregang penuh */
+    padding: 10px 35px; /* Padding lebih besar */
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.action-buttons.main-action-buttons .controls-content:hover {
+    background-color: #c0392b;
+}
+.action-buttons.main-action-buttons .cancel-btn {
+    background-color: #7f8c8d;
+}
+.action-buttons.main-action-buttons .cancel-btn:hover {
+    background-color: #5d6d7e;
+}
+.cancel-btn[style*="display: none"] ~ .start-btn, /* Better to handle with JS if possible */
+.start-btn[style*="display: none"] {
+    /* Adjust if only one button is visible */
+}
+
+
 .score-block {
-  position: fixed;
-  right: 10px;
-  top: 10px;
+  position: fixed; /* Or absolute if preferred within a specific parent */
+  right: 15px;
+  top: 15px;
   background-color: #2f2e2e;
   border-radius: 8px;
   padding: 8px 12px;
   color: #28a745;
   font-size: clamp(0.8rem, 2.2vw, 1.1rem);
-  z-index: 1000;
+  z-index: 1000; /* Pastikan skor tetap di atas */
 }
-
-.score {
-  color: #fff;
-  padding: 0.4rem;
-  display: inline-block;
-}
+.score { color: #fff; padding: 0.4rem; display: inline-block; }
 
 .levels {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 10px 0;
+  margin: 10px 0 15px 0;
   font-size: clamp(0.8rem, 2.2vw, 0.95rem);
-  gap: 8px;
+  gap: 15px;
 }
+.levels > div { margin: 0 5px; }
+.levels > div:nth-child(1) label { color: #00ff00; } /* Easy */
+.levels > div:nth-child(2) label { color: #ffd24e; } /* Medium */
+.levels > div:nth-child(3) label { color: #ff0000; } /* Hard */
 
-.levels > div {
-  margin: 0 8px;
-}
-
-.levels > div:nth-child(1) label { color: #00ff00; }
-.levels > div:nth-child(2) label { color: #ffd24e; }
-.levels > div:nth-child(3) label { color: #ff0000; }
-
-/* Tata Letak Utama untuk Game dan Sidebar */
-.game-layout-wrapper {
+/* Tata Letak Utama untuk 3 Kolom */
+.main-content-wrapper {
   display: flex;
-  flex-wrap: wrap; 
-  justify-content: center; 
-  gap: 20px; 
+  flex-wrap: wrap; /* Agar bisa menumpuk di layar kecil */
+  justify-content: space-between; /* Memberi ruang antar kolom */
+  gap: 15px; 
   width: 100%;
   margin-top: 15px;
-  align-items: flex-start; /* Menjaga bagian atas elemen sejajar */
+  align-items: flex-start; /* Sejajarkan bagian atas kolom */
+}
+
+.left-sidebar-controls,
+.right-sidebar-highscore {
+  flex: 1; /* Sidebar mengambil proporsi ruang yang sama */
+  min-width: 240px; /* Lebar minimum sidebar */
+  max-width: 300px; /* Batasi lebar sidebar */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Jarak antar bagian di dalam sidebar */
+  padding: 15px;
+  background-color: #252525; /* Latar belakang sidebar */
+  border-radius: 10px;
+  align-self: stretch; /* Mencoba membuat tinggi sidebar sama dengan kolom tertinggi */
 }
 
 .game-area-wrapper {
-  flex: 2; 
-  min-width: 300px; 
-  max-width: 600px; 
-  display: flex; 
-  justify-content: center;
+  flex: 2; /* Area game mengambil porsi lebih besar di tengah */
+  min-width: 300px; /* Lebar minimum untuk area game */
+  max-width: 600px; /* Sesuai ukuran game asli Anda */
+  display: flex;
+  justify-content: center; /* Memusatkan .game jika wrapper lebih lebar */
 }
 
 .game {
-  width: 100%;
-  aspect-ratio: 3 / 2;
+  width: 100%; /* Mengisi .game-area-wrapper */
+  /* height: 400px; /* Original height */
+  aspect-ratio: 3 / 2; /* Menjaga rasio 600x400 secara responsif */
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 8px;
+  gap: 10px; /* Sesuaikan gap jika perlu agar pas dengan 600x400 */
+  /* background-color: #333; /* Debugging bg */
 }
 
-.controls-sidebar {
-  flex: 1; 
-  min-width: 280px; 
-  max-width: 320px; /* Sedikit disesuaikan agar tidak terlalu lebar */
+/* Gaya untuk bagian-bagian di dalam sidebar kiri */
+.time-controls-section,
+.image-controls-section {
+  background-color: #2f2e2e; /* Latar belakang untuk setiap grup kontrol */
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 15px; 
-  padding: 15px; /* Menambah padding internal sidebar */
-  background-color: #2a2a2a; 
-  border-radius: 10px;
-  align-self: stretch; /* Membuat sidebar meregang setinggi area game jika memungkinkan */
+  gap: 10px; /* Jarak antar elemen di dalam grup */
+}
+
+.time-controls-section h3,
+.image-controls-section h3,
+.highscore-section h3 { /* Judul untuk semua bagian sidebar */
+  text-align: center;
+  margin-bottom: 8px;
+  color: #e74c3c; /* Warna judul bagian */
+  font-size: clamp(1rem, 2.5vw, 1.1rem);
 }
 
 .mole-image-selector {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  background-color: #2f2e2e;
-  border-radius: 8px;
+  align-items: center; /* Pusatkan konten di dalam selector */
+  gap: 10px; /* Jarak antar label, input, dan tombol hapus */
   width: 100%;
 }
-
 .mole-image-selector label {
   font-size: clamp(0.85rem, 2.3vw, 0.95rem);
-  color: #e2e8f0;
-  margin-bottom: 5px; /* Memberi jarak ke input file */
+  color: #e2e8f0; /* Warna teks label */
 }
-
 .mole-image-selector input[type="file"] {
   font-size: clamp(0.75rem, 2vw, 0.85rem);
-  color: #cbd5e0;
-  padding: 5px;
-  border-radius: 4px;
-  background-color: #4a5568;
-  border: 1px solid #718096;
-  width: 100%; 
+  color: #cbd5e0; padding: 6px; border-radius: 4px;
+  background-color: #4a5568; border: 1px solid #718096; width: 100%;
 }
-
 .mole-image-selector input[type="file"]::file-selector-button {
-  margin-right: 8px;
-  border: none;
-  background: #38a169;
-  padding: 5px 10px;
-  border-radius: 4px;
-  color: #fff;
+  margin-right: 8px; border: none; background: #38a169; /* Warna tombol file */
+  padding: 6px 10px; border-radius: 4px; color: #fff;
+  cursor: pointer; transition: background-color .2s ease-in-out;
+}
+.mole-image-selector input[type="file"]::file-selector-button:hover { background: #2f855a; }
+
+.remove-image-btn {
+  padding: 8px 15px; font-size: clamp(0.75rem, 2vw, 0.85rem);
+  border: 1px solid #c53030; outline: none; border-radius: 6px;
+  color: #fff; background-color: #e53e3e; /* Warna tombol hapus */
   cursor: pointer;
-  transition: background-color .2s ease-in-out;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  width: 100%; margin-top: 5px; font-weight: 500;
 }
-
-.mole-image-selector input[type="file"]::file-selector-button:hover {
-  background: #2f855a;
-}
-
-.controls { /* Kontainer untuk durasi, countdown, dan tombol aksi di sidebar */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px; 
-  width: 100%;
-}
+.remove-image-btn:hover { background-color: #c53030; border-color: #9b2c2c; }
 
 .duration-selector {
-  display: flex;
-  justify-content: space-between; /* Menyebar tombol durasi */
-  gap: 6px; 
-  width: 100%;
+  display: flex; justify-content: space-between; /* Atau space-around */
+  gap: 6px; width: 100%;
 }
-
 .duration-btn {
-  padding: 8px 10px; /* Disesuaikan agar pas */
-  font-size: clamp(0.7rem, 1.8vw, 0.85rem); /* Disesuaikan */
-  border: 1px solid #718096; 
-  outline: none;
-  border-radius: 6px;
-  color: #e2e8f0; 
-  background-color: #4a5568; 
-  cursor: pointer;
+  padding: 8px 10px; font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+  border: 1px solid #718096; outline: none; border-radius: 6px;
+  color: #e2e8f0; background-color: #4a5568; cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-  flex-grow: 1; /* Biarkan tombol tumbuh */
-  flex-basis: 0; /* Penting untuk flex-grow agar bekerja dengan baik */
-  text-align: center;
-  font-weight: 500; 
+  flex-grow: 1; flex-basis: 0; /* Agar tombol mengisi ruang secara merata */
+  text-align: center; font-weight: 500;
 }
-
-.duration-btn:hover:not(.active) {
-  background-color: #2d3748; 
-  border-color: #a0aec0; 
-}
-
-.duration-btn.active {
-  background-color: #38a169; 
-  border-color: #2f855a; 
-  color: #fff; 
-  font-weight: bold; 
-}
+.duration-btn:hover:not(.active) { background-color: #2d3748; border-color: #a0aec0; }
+.duration-btn.active { background-color: #38a169; border-color: #2f855a; color: #fff; font-weight: bold; }
 
 .countdown-display {
-  font-size: clamp(0.9rem, 2.5vw, 1.2rem); 
-  color: #e74c3c; 
-  font-weight: bold;
-  text-align: center;
-  padding: 8px 0; /* Menambah padding vertikal */
-  width: 100%;
-  background-color: rgba(47, 46, 46, 0.6); /* Sedikit lebih gelap */
-  border-radius: 6px;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem); color: #e74c3c; /* Warna teks countdown */
+  font-weight: bold; text-align: center; padding: 8px 0;
+  width: 100%; background-color: rgba(30, 30, 30, 0.7); border-radius: 6px;
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: space-between; /* Menyebar tombol start/cancel */
-  gap: 8px; 
-  width: 100%;
-}
-
-.controls-content { 
-  padding: 8px 15px; /* Disesuaikan */
-  font-size: clamp(0.8rem, 2.2vw, 0.95rem); /* Disesuaikan */
-  border: none;
-  outline: none;
+/* Gaya untuk High Score Section di sidebar kanan */
+.highscore-section {
+  background-color: #2f2e2e;
+  padding: 12px;
   border-radius: 8px;
-  color: #fff;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
-  flex-grow: 1; 
-  flex-basis: 0; /* Penting untuk flex-grow */
-  max-width: 48%; /* Memastikan tidak terlalu lebar jika hanya satu tombol */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+.highscore-section #highscore-display {
+  text-align: center;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: #f1c40f; /* Warna teks high score */
+}
+.highscore-section #highscore-display span { font-weight: bold; }
+.highscore-section #highscore-display p { margin: 5px 0; }
 
-.start-btn { background: #28a745; }
-.start-btn:hover { background: #1f7933; }
-.cancel-btn { background: #e74c3c; display: none; }
-.cancel-btn:hover { background: #c0392b; }
 
 .hole {
+  /* width: 100%; height: 100%; Calculated by grid */
   overflow: hidden;
   position: relative;
-  background-color: #4a3b31;
-  border-radius: 50%;
-  border: none;
-  box-shadow: none;
+  /* background-color: #555; For debugging hole areas */
 }
 
 .hole:after {
@@ -281,99 +278,109 @@ h1 {
   background-size: contain;
   content: "";
   width: 100%;
-  height: 100%;
+  height: 70px; /* Adjust based on your image */
   position: absolute;
-  z-index: 1;
-  bottom: -15%;
-  left: 0;
+  z-index: 1; /* Di atas mole jika perlu, atau di bawah */
+  bottom: -20px; /* Adjust to align with hole bottom */
 }
 
 .mole {
   position: absolute;
-  top: 100%;
-  left: 0;
+  top: 100%; /* Start hidden */
   width: 100%;
   height: 100%;
-  background: url("img/mole.png") center center no-repeat;
-  background-size: 60%;
-  transition: top 0.3s ease;
+  background: url("img/mole.png") bottom center no-repeat; /* Pastikan path gambar benar */
+  background-size: 60%; /* Adjust as needed */
+  transition: top 0.4s;
   cursor: pointer;
-  z-index: 2;
+  z-index: 2; /* Di atas hole:after */
 }
 
-.hole.up .mole { top: 5%; }
+.hole.up .mole {
+  top: 0; /* Mole appears */
+}
+
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Custom Message Box - Styles from original */
 .message-box-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background-color: rgba(0,0,0,0.6);
   display: flex; justify-content: center; align-items: center;
-  z-index: 10000;
-  opacity: 0; visibility: hidden;
+  z-index: 10000; opacity: 0; visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .message-box-overlay.visible { opacity: 1; visibility: visible; }
 .message-box {
-  background-color: #34495e;
-  padding: 20px 30px; border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  text-align: center; color: #ecf0f1;
-  transform: scale(0.9); transition: transform 0.3s ease;
-  max-width: 90%;
+  background-color: #34495e; padding: 20px 30px; border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3); text-align: center; color: #ecf0f1;
+  transform: scale(0.9); transition: transform 0.3s ease; max-width: 90%;
 }
 .message-box-overlay.visible .message-box { transform: scale(1); }
 .message-box p { font-size: clamp(1rem, 3vw, 1.2rem); margin-bottom: 20px; }
 .message-box button {
-  background-color: #e74c3c; color: white;
-  border: none; padding: 10px 20px; border-radius: 5px;
-  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  background-color: #e74c3c; color: white; border: none;
+  padding: 10px 20px; border-radius: 5px; font-size: clamp(0.9rem, 2.5vw, 1rem);
   cursor: pointer; transition: background-color 0.2s ease;
 }
 .message-box button:hover { background-color: #c0392b; }
 
-/* Penyesuaian Responsif untuk Tata Letak Baru */
-@media (max-width: 768px) { /* Tablet dan layar lebih kecil */
-  .game-layout-wrapper {
-    flex-direction: column; 
-    align-items: center; 
+
+/* Penyesuaian Responsif untuk Tata Letak 3 Kolom */
+@media (max-width: 980px) { /* Breakpoint saat sidebar mungkin mulai menumpuk */
+  .main-content-wrapper {
+    flex-direction: column; /* Stack columns */
+    align-items: center; /* Center stacked items */
   }
-  .controls-sidebar {
-    max-width: 500px; 
-    margin-top: 20px;
-    align-self: auto; /* Reset align-self */
+  .left-sidebar-controls,
+  .right-sidebar-highscore,
+  .game-area-wrapper {
+    max-width: 600px; /* Lebar maksimum saat menumpuk, sesuaikan dengan game area */
+    width: 100%; /* Ambil lebar penuh saat menumpuk */
+    align-self: auto; /* Reset align-self saat menumpuk */
   }
-  .game-area-wrapper{
-      max-width: 100%; 
-      width:100%; /* Pastikan area game mengambil lebar penuh saat di atas sidebar */
-  }
-   .game {
-    max-width: 540px; /* Batasi lebar game agar tidak terlalu besar di tablet */
-    margin-left: auto;
-    margin-right: auto;
-  }
+  .left-sidebar-controls { order: 1; margin-top: 0;} /* Kontrol kiri tetap di atas */
+  .game-area-wrapper { order: 2; margin-top: 15px;} /* Game di tengah */
+  .right-sidebar-highscore { order: 3; margin-top: 15px;} /* Highscore di bawah */
 }
 
-@media (max-width: 480px) { /* Ponsel */
+
+@media (max-width: 480px) { /* Further adjustments for very small screens */
   body { padding: 5px; }
   .container { margin: 5px auto; padding: 0 10px; max-width: 100%;}
   h1 { margin-top: 5px; margin-bottom: 10px; font-size: clamp(1.6rem, 3.5vw, 2.2rem); }
+  
+  .player-section { max-width: 100%;}
   .name-input { margin: 10px 0; max-width: 100%;}
-  .mole-image-selector { margin: 10px 0; max-width: 100%; }
   .levels { margin: 10px 0; }
-  .controls { margin-bottom: 10px; gap: 8px; }
-  .duration-selector { flex-direction: row; /* Tetap row jika muat, atau bisa column */ gap: 5px; }
-  .duration-btn { width: auto; margin-bottom: 0; font-size: clamp(0.65rem, 1.7vw, 0.8rem); padding: 6px 8px; }
-  .countdown-display { font-size: clamp(0.85rem, 2.3vw, 1rem); }
-  .action-buttons { flex-direction: row; gap: 5px; }
-  .controls-content { width: auto; margin-bottom: 0; max-width: 48%; font-size: clamp(0.75rem, 2vw, 0.9rem); padding: 6px 12px;}
-  .game { margin: 5px auto; min-width: 100%; gap: 5px; } /* Game mengambil lebar penuh */
-  .controls-sidebar {
-    min-width: 100%; 
-    padding: 10px; /* Sedikit padding untuk sidebar di ponsel */
+  
+  .left-sidebar-controls,
+  .right-sidebar-highscore {
+    min-width: 100%; /* Ensure full width */
+    padding: 10px; /* Kurangi padding sedikit */
+    gap: 10px; /* Kurangi gap antar section di sidebar */
   }
+
+  .time-controls-section, .image-controls-section, .highscore-section {
+      padding: 10px;
+      gap: 8px;
+  }
+
+  .mole-image-selector { margin: 0; max-width: 100%; }
+
+  .duration-selector { gap: 5px; }
+  .duration-btn { font-size: clamp(0.65rem, 1.7vw, 0.8rem); padding: 6px 8px; }
+  .countdown-display { font-size: clamp(0.85rem, 2.3vw, 1rem); padding: 6px 0;}
+  
+  .action-buttons.main-action-buttons .controls-content { padding: 8px 20px;}
+
+  .game {
+    margin: 5px auto; /* Sedikit margin atas bawah */
+    min-width: 100%; /* Ensure game area also takes full width if needed */
+    gap: 5px; /* Kurangi gap antar hole */
+  } 
 }
