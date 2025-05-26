@@ -4,19 +4,18 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
   <title>Hole and Mole Game</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Catch me, If you can</h1>
 
-    <!-- Input nama peserta -->
     <div class="name-input">
       <input type="text" id="player-name" placeholder="Masukkan nama kamu..." />
     </div>
 
-    <h2 class="score-block">Score:<span class="score">0</span></h2>
+    <h2 class="score-block">Score: <span class="score">0</span></h2>
 
     <div class="levels">
       <div><input type="radio" name="level" id="easy" checked /><label for="easy">Easy</label></div>
@@ -24,20 +23,43 @@
       <div><input type="radio" name="level" id="hard" /><label for="hard">Hard</label></div>
     </div>
 
-    <div class="controls">
-      <input type="number" class="controls-content timer" min="5" max="1000" step="5" placeholder="duration" />
-      <button class="controls-content start-btn" onClick="startGame()">Start</button>
-      <button class="controls-content cancel-btn" onClick="endGame()">Cancel</button>
-    </div>
+    <div class="game-layout-wrapper">
+      
+      <div class="game-area-wrapper">
+        <div class="game">
+          <div class="hole hole1"><div class="mole"></div></div>
+          <div class="hole hole2"><div class="mole"></div></div>
+          <div class="hole hole3"><div class="mole"></div></div>
+          <div class="hole hole4"><div class="mole"></div></div>
+          <div class="hole hole5"><div class="mole"></div></div>
+          <div class="hole hole6"><div class="mole"></div></div>
+        </div>
+      </div>
 
-    <div class="game">
-      <div class="hole hole1"><div class="mole"></div></div>
-      <div class="hole hole2"><div class="mole"></div></div>
-      <div class="hole hole3"><div class="mole"></div></div>
-      <div class="hole hole4"><div class="mole"></div></div>
-      <div class="hole hole5"><div class="mole"></div></div>
-      <div class="hole hole6"><div class="mole"></div></div>
-    </div>
+      <div class="controls-sidebar">
+        <div class="mole-image-selector">
+          <label for="mole-image-upload">Ganti Gambar Tikus:</label>
+          <input type="file" id="mole-image-upload" accept="image/*">
+        </div>
+
+        <div class="controls"> <div class="duration-selector">
+            <button class="duration-btn" data-duration="30">30 Detik</button>
+            <button class="duration-btn active" data-duration="60">1 Menit</button>
+            <button class="duration-btn" data-duration="300">5 Menit</button>
+          </div>
+          <div id="countdown-area" class="countdown-display">
+            Waktu: <span id="time-left-display">60</span> detik
+          </div>
+          <div class="action-buttons">
+            <button class="controls-content start-btn">Start</button>
+            <button class="controls-content cancel-btn">Cancel</button>
+          </div>
+        </div>
+      </div> </div> </div> <div class="message-box-overlay" id="messageBoxOverlay">
+      <div class="message-box">
+          <p id="messageBoxText"></p>
+          <button id="messageBoxButton">OK</button>
+      </div>
   </div>
 
   <script src="script.js"></script>
