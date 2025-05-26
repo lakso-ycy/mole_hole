@@ -1,31 +1,32 @@
 // Select DOM elements
 const holes = document.querySelectorAll(".hole");
 const scoreBoard = document.querySelector(".score");
-const moles = document.querySelectorAll(".mole"); 
+const moles = document.querySelectorAll(".mole");
 const startBtn = document.querySelector(".start-btn");
 const cancelBtn = document.querySelector(".cancel-btn");
 const levelsContainer = document.querySelector(".levels");
 const playerNameInput = document.getElementById("player-name");
+const playerScores = {};
 
 const durationButtons = document.querySelectorAll(".duration-btn");
 const timeLeftDisplay = document.getElementById("time-left-display");
 const countdownArea = document.getElementById("countdown-area");
 
-const messageBoxOverlay = document.getElementById('messageBoxOverlay');
-const messageBoxText = document.getElementById('messageBoxText');
-const messageBoxButton = document.getElementById('messageBoxButton');
+const messageBoxOverlay = document.getElementById("messageBoxOverlay");
+const messageBoxText = document.getElementById("messageBoxText");
+const messageBoxButton = document.getElementById("messageBoxButton");
 
-const moleImageUpload = document.getElementById('mole-image-upload');
+const moleImageUpload = document.getElementById("mole-image-upload");
 // BARU: Seleksi tombol Hapus Foto
-const removeMoleImageBtn = document.getElementById('remove-mole-image-btn');
+const removeMoleImageBtn = document.getElementById("remove-mole-image-btn");
 
 // BARU: Simpan URL gambar tikus default dari CSS. Pastikan path ini sesuai dengan yang ada di style.css Anda.
-const defaultMoleImageUrl = 'url("img/mole.png")'; 
+const defaultMoleImageUrl = 'url("img/mole.png")';
 
 let lastHole;
 let timeUp = false;
 let score = 0;
-let countdownInterval; 
+let countdownInterval;
 let selectedDuration = 60; // Default duration: 1 minute (60 seconds)
 
 /**
@@ -37,14 +38,14 @@ function showCustomMessage(message) {
     messageBoxText.textContent = message;
   }
   if (messageBoxOverlay) {
-    messageBoxOverlay.classList.add('visible');
+    messageBoxOverlay.classList.add("visible");
   }
 }
 
 // Event listener for the custom message box's OK button
 if (messageBoxButton && messageBoxOverlay) {
-  messageBoxButton.addEventListener('click', () => {
-    messageBoxOverlay.classList.remove('visible');
+  messageBoxButton.addEventListener("click", () => {
+    messageBoxOverlay.classList.remove("visible");
   });
 }
 
@@ -53,24 +54,27 @@ if (messageBoxButton && messageBoxOverlay) {
  * @param {HTMLElement} selectedBtn - The button element that was clicked.
  */
 function setActiveDurationButton(selectedBtn) {
-  durationButtons.forEach(button => {
+  durationButtons.forEach((button) => {
     button.classList.remove("active");
   });
   if (selectedBtn) {
     selectedBtn.classList.add("active");
-    if (timeLeftDisplay) { 
-        timeLeftDisplay.textContent = selectedBtn.dataset.duration;
+    if (timeLeftDisplay) {
+      timeLeftDisplay.textContent = selectedBtn.dataset.duration;
     }
   }
 }
 
 // Add event listeners to duration buttons
-durationButtons.forEach(button => {
+durationButtons.forEach((button) => {
   button.addEventListener("click", () => {
     // Allow duration change only if the game is not currently running
-    if (startBtn.style.display === 'none' && cancelBtn.style.display !== 'none') {
-        console.log("Cannot change duration while game is in progress.");
-        return; 
+    if (
+      startBtn.style.display === "none" &&
+      cancelBtn.style.display !== "none"
+    ) {
+      console.log("Cannot change duration while game is in progress.");
+      return;
     }
     selectedDuration = parseInt(button.dataset.duration);
     setActiveDurationButton(button);
@@ -123,12 +127,19 @@ function makeMoleAppear(showDuration, hideDuration) {
   const hole = getRandomHole(holes);
   hole.classList.add("up"); // Mole appears
   const moleUpDuration = getRandomTime(showDuration / 1.5, showDuration * 1.2);
-  
+
   setTimeout(() => {
     hole.classList.remove("up"); // Mole hides
-    const moleHiddenDuration = getRandomTime(hideDuration / 1.5, hideDuration * 1.2);
-    if (!timeUp) { // If game is still on, make another mole appear
-        setTimeout(() => makeMoleAppear(showDuration, hideDuration), moleHiddenDuration);
+    const moleHiddenDuration = getRandomTime(
+      hideDuration / 1.5,
+      hideDuration * 1.2
+    );
+    if (!timeUp) {
+      // If game is still on, make another mole appear
+      setTimeout(
+        () => makeMoleAppear(showDuration, hideDuration),
+        moleHiddenDuration
+      );
     }
   }, moleUpDuration);
 }
@@ -146,14 +157,27 @@ function startGame() {
   const difficulty = getDifficultyLevel();
   let showDuration, hideDuration;
   switch (difficulty) {
-    case "easy":   showDuration = 750; hideDuration = 1200; break;
-    case "medium": showDuration = 500; hideDuration = 900;  break;
-    case "hard":   showDuration = 300; hideDuration = 600;  break;
-    default:       showDuration = 750; hideDuration = 1200;
+    case "easy":
+      showDuration = 750;
+      hideDuration = 1200;
+      break;
+    case "medium":
+      showDuration = 500;
+      hideDuration = 900;
+      break;
+    case "hard":
+      showDuration = 300;
+      hideDuration = 600;
+      break;
+    default:
+      showDuration = 750;
+      hideDuration = 1200;
   }
- 
+
   // Pop-up "Selamat bermain" sudah dihilangkan sesuai permintaan sebelumnya
-  console.log(`Game dimulai oleh: ${playerName}, Level: ${difficulty}, Durasi: ${selectedDuration}s`); // Log game start
+  console.log(
+    `Game dimulai oleh: ${playerName}, Level: ${difficulty}, Durasi: ${selectedDuration}s`
+  ); // Log game start
 
   score = 0;
   scoreBoard.textContent = score;
@@ -164,30 +188,33 @@ function startGame() {
   startBtn.style.display = "none";
   levelsContainer.style.visibility = "hidden";
   playerNameInput.disabled = true;
-  durationButtons.forEach(button => button.disabled = true); // Disable duration buttons
+  durationButtons.forEach((button) => (button.disabled = true)); // Disable duration buttons
   if (moleImageUpload) moleImageUpload.disabled = true; // Disable image upload during game
   if (removeMoleImageBtn) removeMoleImageBtn.disabled = true; // Disable remove image button
 
-  if (countdownInterval) { // Clear any existing timer
+  if (countdownInterval) {
+    // Clear any existing timer
     clearInterval(countdownInterval);
   }
 
   let currentTimeLeft = selectedDuration;
   // Update countdown display at the start
   if (timeLeftDisplay) {
-      timeLeftDisplay.textContent = currentTimeLeft;
+    timeLeftDisplay.textContent = currentTimeLeft;
   }
-  if (countdownArea) { 
-      countdownArea.style.display = 'block'; // Ensure countdown area is visible
+  if (countdownArea) {
+    countdownArea.style.display = "block"; // Ensure countdown area is visible
   }
 
   // Start the countdown timer
   countdownInterval = setInterval(() => {
     currentTimeLeft--;
-    if (timeLeftDisplay) { // Update display every second
-        timeLeftDisplay.textContent = currentTimeLeft;
+    if (timeLeftDisplay) {
+      // Update display every second
+      timeLeftDisplay.textContent = currentTimeLeft;
     }
-    if (currentTimeLeft < 0) { // Time is up
+    if (currentTimeLeft < 0) {
+      // Time is up
       clearInterval(countdownInterval);
       endGame(playerName, score);
     }
@@ -202,34 +229,35 @@ function startGame() {
  * @param {number} finalScore - The final score.
  */
 function endGame(playerName, finalScore) {
-  timeUp = true; // Set game over flag
-  if (countdownInterval) { // Clear the game timer
-     clearInterval(countdownInterval);
-  }
-  holes.forEach(hole => hole.classList.remove("up")); // Hide all moles
+  timeUp = true;
+  clearInterval(countdownInterval);
+  holes.forEach((hole) => hole.classList.remove("up"));
 
-  // Display end game message
-  if (playerName && typeof finalScore === 'number') {
-      showCustomMessage(`Waktu habis, ${playerName}! Skor akhir kamu: ${finalScore}`); // "Time's up, {playerName}! Your final score: {finalScore}"
-  } else {
-      showCustomMessage("Permainan dibatalkan atau selesai."); // "Game cancelled or finished."
-  }
-  
+  // Simpan skor pemain
+  playerScores[playerName] = (playerScores[playerName] || 0) + finalScore;
+  updateHighScoreDisplay();
+
+  showCustomMessage(
+    `Waktu habis, ${playerName}! Skor akhir kamu: ${finalScore}`
+  );
+
   // Update UI controls
   cancelBtn.style.display = "none";
   startBtn.style.display = "inline-block";
   levelsContainer.style.visibility = "visible";
   playerNameInput.disabled = false;
-  durationButtons.forEach(button => button.disabled = false); // Re-enable duration buttons
+  durationButtons.forEach((button) => (button.disabled = false)); // Re-enable duration buttons
   if (moleImageUpload) moleImageUpload.disabled = false; // Re-enable image upload
   if (removeMoleImageBtn) removeMoleImageBtn.disabled = false; // Re-enable remove image button
-  
+
   // Reset countdown display to the last selected duration
-  const currentActiveDurationButton = document.querySelector('.duration-btn.active');
+  const currentActiveDurationButton = document.querySelector(
+    ".duration-btn.active"
+  );
   if (timeLeftDisplay && currentActiveDurationButton) {
-      timeLeftDisplay.textContent = currentActiveDurationButton.dataset.duration;
+    timeLeftDisplay.textContent = currentActiveDurationButton.dataset.duration;
   } else if (timeLeftDisplay) {
-      timeLeftDisplay.textContent = selectedDuration; // Fallback
+    timeLeftDisplay.textContent = selectedDuration; // Fallback
   }
 }
 
@@ -246,44 +274,48 @@ function handleMoleHit(e) {
 
 // Event listener for mole image upload
 if (moleImageUpload) {
-  moleImageUpload.addEventListener('change', function(event) {
+  moleImageUpload.addEventListener("change", function (event) {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) { // Check if it's an image file
+    if (file && file.type.startsWith("image/")) {
+      // Check if it's an image file
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const newMoleImageUrl = e.target.result;
         // Apply the new image to all mole elements
-        moles.forEach(moleEl => {
+        moles.forEach((moleEl) => {
           moleEl.style.backgroundImage = `url(${newMoleImageUrl})`;
         });
         console.log("Gambar tikus diganti!"); // Log mole image changed
         // Clear the file input value to allow selecting the same file again if needed
-        moleImageUpload.value = ''; 
-      }
+        moleImageUpload.value = "";
+      };
       reader.readAsDataURL(file); // Read the file as a data URL
     } else if (file) {
       showCustomMessage("Harap pilih file gambar (misalnya .png, .jpg, .gif)."); // "Please select an image file..."
-      moleImageUpload.value = ''; // Clear invalid file
+      moleImageUpload.value = ""; // Clear invalid file
     }
   });
 }
 
 // BARU: Event listener untuk tombol Hapus Foto
 if (removeMoleImageBtn) {
-  removeMoleImageBtn.addEventListener('click', function() {
+  removeMoleImageBtn.addEventListener("click", function () {
     // Hanya izinkan hapus foto jika game belum dimulai atau sudah selesai
-    if (startBtn.style.display === 'none' && cancelBtn.style.display !== 'none') {
-        showCustomMessage("Tidak bisa menghapus foto saat game berlangsung.");
-        return; 
+    if (
+      startBtn.style.display === "none" &&
+      cancelBtn.style.display !== "none"
+    ) {
+      showCustomMessage("Tidak bisa menghapus foto saat game berlangsung.");
+      return;
     }
-    moles.forEach(moleEl => {
+    moles.forEach((moleEl) => {
       // Mengatur kembali ke gambar default yang didefinisikan di CSS.
       // Ini akan menghapus style inline `backgroundImage` yang mungkin telah diterapkan.
-      moleEl.style.backgroundImage = ''; 
+      moleEl.style.backgroundImage = "";
     });
     // Kosongkan input file juga
     if (moleImageUpload) {
-        moleImageUpload.value = '';
+      moleImageUpload.value = "";
     }
     console.log("Gambar tikus dikembalikan ke default.");
     showCustomMessage("Gambar tikus telah dikembalikan ke default.");
@@ -296,16 +328,53 @@ startBtn.addEventListener("click", startGame);
 cancelBtn.addEventListener("click", () => endGame());
 
 // Initialize active duration button and countdown display on page load
-document.addEventListener('DOMContentLoaded', () => {
-    const defaultActiveButton = document.querySelector('.duration-btn[data-duration="60"]'); // Default to 1 minute
-    if (defaultActiveButton) {
-        setActiveDurationButton(defaultActiveButton);
-        selectedDuration = parseInt(defaultActiveButton.dataset.duration);
-        if (timeLeftDisplay) { 
-            timeLeftDisplay.textContent = selectedDuration; // Initialize countdown display
-        }
+document.addEventListener("DOMContentLoaded", () => {
+  const defaultActiveButton = document.querySelector(
+    '.duration-btn[data-duration="60"]'
+  ); // Default to 1 minute
+  if (defaultActiveButton) {
+    setActiveDurationButton(defaultActiveButton);
+    selectedDuration = parseInt(defaultActiveButton.dataset.duration);
+    if (timeLeftDisplay) {
+      timeLeftDisplay.textContent = selectedDuration; // Initialize countdown display
     }
-    if (countdownArea) { // Ensure countdown area is visible on load
-        countdownArea.style.display = 'block';
-    }
+  }
+  if (countdownArea) {
+    // Ensure countdown area is visible on load
+    countdownArea.style.display = "block";
+  }
 });
+
+function updateHighScoreDisplay() {
+  const highscoreDisplay = document.getElementById("highscore-display");
+  if (!highscoreDisplay) return;
+
+  // Ubah object ke array, lalu urutkan dari skor tertinggi
+  const sortedScores = Object.entries(playerScores).sort((a, b) => b[1] - a[1]);
+
+  let html = "";
+  sortedScores.forEach(([name, score], index) => {
+    const rank = index + 1;
+    let sizeClass = "";
+    if (rank === 1) sizeClass = "rank-1";
+    else if (rank === 2) sizeClass = "rank-2";
+    else if (rank === 3) sizeClass = "rank-3";
+
+    html += `<p class="${sizeClass}">#${rank} <strong>${name}</strong>: ${score}</p>`;
+  });
+
+  highscoreDisplay.innerHTML = html || "<p>Belum ada skor</p>";
+}
+
+function resetScores() {
+  for (const name in playerScores) {
+    delete playerScores[name];
+  }
+  updateHighScoreDisplay();
+  showCustomMessage("Semua skor telah di-reset.");
+}
+
+const resetBtn = document.getElementById("reset-scores-btn");
+if (resetBtn) {
+  resetBtn.addEventListener("click", resetScores);
+}
