@@ -26,7 +26,7 @@ let lastHole;
 let timeUp = false;
 let score = 0;
 let countdownInterval;
-let selectedDuration = 60; // Default duration: 1 minute (60 seconds)
+let selectedDuration = 15; // Default duration: 1 minute (60 seconds)
 
 /**
  * Shows a custom message box.
@@ -248,8 +248,7 @@ function endGame(nameParam, scoreParam, isCancelled = false) {
     if (actualPlayerName && typeof scoreParam === "number") {
       // This condition should always be true if called from time-up scenario
       // because startGame validates the name, and score is always numeric.
-      playerScores[actualPlayerName] =
-        (playerScores[actualPlayerName] || 0) + scoreParam;
+      playerScores[actualPlayerName] = Math.max(playerScores[actualPlayerName] || 0, scoreParam)
       updateHighScoreDisplay();
       showCustomMessage(
         `Waktu habis, ${actualPlayerName}! Skor akhir kamu: ${scoreParam}`
