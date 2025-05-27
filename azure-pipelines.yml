@@ -1,0 +1,18 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+
+- script: |
+    pip install flask flask-cors
+    python backend/init_db.py
+  displayName: 'Install dependencies and initialize DB'
+
+- script: echo "Flask backend is ready"
+  displayName: 'Backend preparation complete'
