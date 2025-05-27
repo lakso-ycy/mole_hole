@@ -17,6 +17,7 @@ body {
   min-height: 100vh;
   padding: 10px 0; /* Padding atas-bawah untuk body */
   overflow-x: hidden; /* Mencegah scroll horizontal */
+  cursor: url('hammer.png'), auto;
 }
 
 .container {
@@ -382,7 +383,7 @@ h1 {
   background: url("img/mole.png") bottom center no-repeat;
   background-size: 60%;
   transition: top 0.4s;
-  cursor: url('img/hammer-cursor.png'), pointer;
+  cursor: url('hammer.png'), pointer;
   z-index: 2;
 }
 
@@ -547,5 +548,16 @@ h1 {
     margin: 5px auto; /* Sedikit margin atas bawah */
     min-width: 100%; /* Ensure game area also takes full width if needed */
     gap: 5px; /* Kurangi gap antar hole */
-  }
+    cursor: url('hammer.png'), auto;
+
+}
+
+/* Cursor default: palu biasa */
+html, body {
+  cursor: url('hammer.png'), auto;
+}
+
+/* Saat diklik: palu mukul */
+body.hammer-hit {
+  cursor: url('hammer-hit.png'), auto;
 }

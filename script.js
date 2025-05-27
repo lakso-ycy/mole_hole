@@ -458,3 +458,14 @@ const resetScoresBtn = document.getElementById("reset-scores-btn");
 if (resetScoresBtn) {
   resetScoresBtn.addEventListener("click", resetScores);
 }
+
+document.addEventListener('mousedown', () => {
+  document.body.classList.add('hammer-hit.png');
+});
+
+document.addEventListener('mouseup', () => {
+  setTimeout(() => {
+    document.body.classList.remove('hammer-hit.png');
+  }, 50); // ganti kecepatan animasi (ms) jika mau
+});
+
