@@ -5,8 +5,11 @@
 }
 
 body {
-  font-family: cursive;
-  background-color: #191919;
+  font-family: 'VT323', monospace;
+  background-image: url("img/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -55,7 +58,7 @@ h1 {
   border: 2px solid #28a745;
   padding: 10px 15px;
   font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-  font-family: cursive;
+  font-family: 'VT323', monospace;
   border-radius: 12px;
   width: 100%;
   text-align: center;
