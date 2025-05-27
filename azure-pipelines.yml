@@ -1,0 +1,58 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main # Atau branch utama Anda, misal: develop
+
+pool:
+  vmImage: 'ubuntu-latest' # Menggunakan agent Linux
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x' # Tentukan versi Node.js yang sesuai
+  displayName: 'Install Node.js'
+
+# Jika Anda memiliki package.json untuk dependencies linter
+# - script: npm install
+#  displayName: 'Install dependencies'
+
+# Langkah Linting (Contoh, Anda perlu setup konfigurasi linter di proyek Anda)
+# Anda mungkin perlu menginstal linter secara global atau sebagai dev dependency
+# dan memiliki file konfigurasi (mis. .eslintrc.json, .stylelintrc.json, .htmlhintrc)
+
+- script: |
+    # Misalnya, jika linter diinstal secara global atau via npx
+    # npm install -g eslint stylelint htmlhint # Atau tambahkan ke devDependencies
+    # npx eslint script.js --format stylish
+    # npx stylelint style.css
+    # npx htmlhint index.html
+    echo "Langkah Linting Placeholder - Konfigurasikan linter Anda"
+  displayName: 'Run Linters (HTML, CSS, JS)'
+  continueOnError: false # Ganti ke 'true' jika ingin pipeline lanjut meski ada error lint
+
+# Langkah Testing (Opsional, jika Anda punya unit test)
+# - script: npm test # Jika Anda menggunakan skrip 'test' di package.json
+#  displayName: 'Run Unit Tests'
+#  continueOnError: false
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)' # Root direktori proyek
+    Contents: | # File dan folder yang akan disalin
+      index.html
+      style.css
+      script.js
+      img/** # Menyalin semua isi folder img jika ada
+      README.md # Opsional
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/game'
+  displayName: 'Copy Files to Artifact Staging Directory'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/game'
+    ArtifactName: 'MoleGameDrop' # Nama artifact yang akan dipublikasikan
+    publishLocation: 'Container'
+  displayName: 'Publish Artifact: MoleGameDrop'
