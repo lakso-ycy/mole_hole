@@ -28,6 +28,17 @@ let score = 0;
 let countdownInterval;
 let selectedDuration = 15; // Default duration: 1 minute (60 seconds)
 
+document.querySelectorAll(".duration-btn").forEach((btn) => {
+  btn.addEventListener("click", function () {
+    document.querySelectorAll(".duration-btn").forEach((b) => b.classList.remove("active"));
+    this.classList.add("active");
+    selectedDuration = parseInt(this.getAttribute("data-duration"));
+    document.getElementById("time-left-display").textContent = selectedDuration;
+    // Reset atau lakukan hal lain jika perlu
+    updateHighScoreDisplay(); // Tampilkan highscore sesuai durasi
+  });
+});
+
 /**
  * Shows a custom message box.
  * @param {string} message - The message to display.
@@ -38,6 +49,15 @@ function showCustomMessage(message) {
   }
   if (messageBoxOverlay) {
     messageBoxOverlay.classList.add("visible");
+  }
+}
+
+function playHitSound() {
+  const sound = document.getElementById("hit-sound");
+  if (sound) {
+    sound.pause();
+    sound.currentTime = 0;  // Supaya bisa diputar ulang kalau klik cepat
+    sound.play();
   }
 }
 
@@ -248,7 +268,13 @@ function endGame(nameParam, scoreParam, isCancelled = false) {
     if (actualPlayerName && typeof scoreParam === "number") {
       // This condition should always be true if called from time-up scenario
       // because startGame validates the name, and score is always numeric.
-      playerScores[actualPlayerName] = Math.max(playerScores[actualPlayerName] || 0, scoreParam)
+      if (!playerScores[selectedDuration]) {
+        playerScores[selectedDuration] = {};  
+      }
+      const currentScore = playerScores[selectedDuration][actualPlayerName] || 0;
+      if (scoreParam > currentScore) {
+        playerScores[selectedDuration][actualPlayerName] = scoreParam;
+      }
       updateHighScoreDisplay();
       showCustomMessage(
         `Waktu habis, ${actualPlayerName}! Skor akhir kamu: ${scoreParam}`
@@ -301,6 +327,7 @@ function endGame(nameParam, scoreParam, isCancelled = false) {
  */
 function handleMoleHit(e) {
   if (!e.isTrusted || timeUp) return; // Ignore if not a trusted event or game is over
+  playHitSound();
   score++;
   if (this.parentNode) {
     // 'this' is the mole div
@@ -398,8 +425,8 @@ function updateHighScoreDisplay() {
   const highscoreDisplayDiv = document.getElementById("highscore-display");
   if (!highscoreDisplayDiv) return;
 
-  // Convert playerScores object to an array of [name, score] pairs, then sort by score descending
-  const sortedScores = Object.entries(playerScores).sort((a, b) => b[1] - a[1]);
+  const currentScores = playerScores[selectedDuration] || {};
+  const sortedScores = Object.entries(currentScores).sort((a, b) => b[1] - a[1]);
 
   let html = "";
   sortedScores.forEach(([name, scoreVal], index) => {
