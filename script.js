@@ -28,6 +28,7 @@ let score = 0;
 let countdownInterval;
 let selectedDuration = 20; // Default duration: 1 minute (60 seconds)
 let activeDuration = 20;
+// let gameStarted = false;
 
 document.querySelectorAll(".duration-btn").forEach((btn) => {
   btn.addEventListener("click", function () {
@@ -171,10 +172,11 @@ function makeMoleAppear(showDuration, hideDuration) {
  * Starts the game.
  */
 function startGame() {
-  score = 0;
-  currentTime = selectedDuration;
+  // currentTime = selectedDuration;
   activeDuration = selectedDuration; // <- simpan durasi yang dipakai saat ini
-  gameStarted = true;
+  // gameStarted = true;
+  score = 0;
+
   const validatedPlayerName = playerNameInput.value.trim();
   if (!validatedPlayerName) {
     showCustomMessage("Masukkan nama dulu ya!");
@@ -254,6 +256,7 @@ function startGame() {
  */
 function endGame(nameParam, scoreParam, isCancelled = false) {
   timeUp = true;
+  // gameStarted = false;
   clearInterval(countdownInterval);
   holes.forEach((hole) => hole.classList.remove("up"));
 
