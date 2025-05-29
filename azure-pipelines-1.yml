@@ -1,17 +1,40 @@
-# HTML
-# Archive your static HTML project and save it with the build record.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Pipeline untuk Game Hole and Mole (HTML, CSS, JavaScript)
 
 trigger:
-- main
+- main # Ganti dengan nama branch utama Anda jika berbeda (misalnya, master, develop)
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest' # Menggunakan agen Linux terbaru
 
 steps:
-- task: ArchiveFiles@2
+- task: NodeTool@0
   inputs:
-    rootFolderOrFile: '$(build.sourcesDirectory)'
-    includeRootFolder: false
+    versionSpec: '20.x' # Tentukan versi Node.js yang ingin digunakan. 18.x adalah pilihan LTS yang baik.
+  displayName: 'Install Node.js'
+
+# Langkah untuk menyalin file-file game ke Artifact Staging Directory
+# Ini adalah direktori sementara di agen build sebelum file dipublikasikan.
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)' # Ini adalah root direktori dari kode sumber Anda
+    Contents: | # Daftar file dan folder yang akan disalin
+      index.html
+      style.css
+      script.js
+      img/** # Menyalin semua isi dari folder 'img'
+      sounds/** # Menyalin semua isi dari folder 'sounds'
+      hammer-hit.png
+      hammer.png
+      README.md   # Opsional, jika Anda ingin menyertakan README
+      # Jangan sertakan .DS_Store karena itu file sistem macOS
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/game-files' # Nama folder di dalam staging directory
+  displayName: 'Copy game files to Staging Directory'
+
+# Langkah untuk memublikasikan artifact
+# Artifact ini akan berisi file-file game Anda dan bisa diunduh atau digunakan oleh release pipeline.
 - task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/game-files' # Path ke folder yang ingin dipublikasikan
+    ArtifactName: 'HoleAndMoleGameDrop' # Nama untuk artifact Anda
+    publishLocation: 'Container' # Lokasi penyimpanan artifact (biasanya 'Container')
+  displayName: 'Publish Game Artifact (HoleAndMoleGameDrop)'

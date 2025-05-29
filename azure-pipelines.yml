@@ -1,58 +1,46 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# Pipeline untuk Game Hole and Mole (HTML, CSS, JavaScript)
 
 trigger:
-- main # Atau branch utama Anda, misal: develop
+- main # Ganti dengan nama branch utama Anda jika berbeda (misalnya, master, develop)
 
 pool:
-  vmImage: 'ubuntu-latest' # Menggunakan agent Linux
+  vmImage: 'ubuntu-latest' # Menggunakan agen Linux terbaru
 
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '18.x' # Tentukan versi Node.js yang sesuai
+    versionSpec: '22.x' # Tentukan versi Node.js yang ingin digunakan. 18.x adalah pilihan LTS yang baik.
   displayName: 'Install Node.js'
 
-# Jika Anda memiliki package.json untuk dependencies linter
+# Langkah untuk menginstal dependencies (jika Anda menggunakan package.json untuk linter)
+# Jika Anda tidak memiliki package.json, Anda bisa mengabaikan atau menghapus langkah ini.
+# Pastikan Anda memiliki file package.json di root proyek Anda jika ingin menggunakan ini.
 # - script: npm install
-#  displayName: 'Install dependencies'
+#  displayName: 'Install project dependencies (from package.json)'
 
-# Langkah Linting (Contoh, Anda perlu setup konfigurasi linter di proyek Anda)
-# Anda mungkin perlu menginstal linter secara global atau sebagai dev dependency
-# dan memiliki file konfigurasi (mis. .eslintrc.json, .stylelintrc.json, .htmlhintrc)
-
-- script: |
-    # Misalnya, jika linter diinstal secara global atau via npx
-    # npm install -g eslint stylelint htmlhint # Atau tambahkan ke devDependencies
-    # npx eslint script.js --format stylish
-    # npx stylelint style.css
-    # npx htmlhint index.html
-    echo "Langkah Linting Placeholder - Konfigurasikan linter Anda"
-  displayName: 'Run Linters (HTML, CSS, JS)'
-  continueOnError: false # Ganti ke 'true' jika ingin pipeline lanjut meski ada error lint
-
-# Langkah Testing (Opsional, jika Anda punya unit test)
-# - script: npm test # Jika Anda menggunakan skrip 'test' di package.json
-#  displayName: 'Run Unit Tests'
-#  continueOnError: false
-
+# Langkah untuk menyalin file-file game ke Artifact Staging Directory
+# Ini adalah direktori sementara di agen build sebelum file dipublikasikan.
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)' # Root direktori proyek
-    Contents: | # File dan folder yang akan disalin
+    SourceFolder: '$(Build.SourcesDirectory)' # Ini adalah root direktori dari kode sumber Anda
+    Contents: | # Daftar file dan folder yang akan disalin
       index.html
       style.css
       script.js
-      img/** # Menyalin semua isi folder img jika ada
-      README.md # Opsional
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/game'
-  displayName: 'Copy Files to Artifact Staging Directory'
+      img/** # Menyalin semua isi dari folder 'img'
+      sounds/** # Menyalin semua isi dari folder 'sounds'
+      hammer-hit.png
+      hammer.png
+      README.md   # Opsional, jika Anda ingin menyertakan README
+      # Jangan sertakan .DS_Store karena itu file sistem macOS
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/game-files' # Nama folder di dalam staging directory
+  displayName: 'Copy game files to Staging Directory'
 
+# Langkah untuk memublikasikan artifact
+# Artifact ini akan berisi file-file game Anda dan bisa diunduh atau digunakan oleh release pipeline.
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)/game'
-    ArtifactName: 'MoleGameDrop' # Nama artifact yang akan dipublikasikan
-    publishLocation: 'Container'
-  displayName: 'Publish Artifact: MoleGameDrop'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/game-files' # Path ke folder yang ingin dipublikasikan
+    ArtifactName: 'HoleAndMoleGameDrop' # Nama untuk artifact Anda
+    publishLocation: 'Container' # Lokasi penyimpanan artifact (biasanya 'Container')
+  displayName: 'Publish Game Artifact (HoleAndMoleGameDrop)'
