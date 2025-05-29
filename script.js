@@ -26,7 +26,7 @@ let lastHole;
 let timeUp = false;
 let score = 0;
 let countdownInterval;
-let selectedDuration = 15; // Default duration: 1 minute (60 seconds)
+let selectedDuration = 20; // Default duration: 1 minute (60 seconds)
 
 document.querySelectorAll(".duration-btn").forEach((btn) => {
   btn.addEventListener("click", function () {
