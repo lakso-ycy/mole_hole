@@ -27,6 +27,7 @@ let timeUp = false;
 let score = 0;
 let countdownInterval;
 let selectedDuration = 20; // Default duration: 1 minute (60 seconds)
+let activeDuration = 20;
 
 document.querySelectorAll(".duration-btn").forEach((btn) => {
   btn.addEventListener("click", function () {
@@ -74,6 +75,7 @@ if (messageBoxButton && messageBoxOverlay) {
  */
 function setActiveDurationButton(selectedBtn) {
   durationButtons.forEach((button) => {
+    selectedDuration = parseInt(this.getAttribute("data-duration"));
     button.classList.remove("active");
   });
   if (selectedBtn) {
@@ -169,6 +171,10 @@ function makeMoleAppear(showDuration, hideDuration) {
  * Starts the game.
  */
 function startGame() {
+  score = 0;
+  currentTime = selectedDuration;
+  activeDuration = selectedDuration; // <- simpan durasi yang dipakai saat ini
+  gameStarted = true;
   const validatedPlayerName = playerNameInput.value.trim();
   if (!validatedPlayerName) {
     showCustomMessage("Masukkan nama dulu ya!");
@@ -268,12 +274,12 @@ function endGame(nameParam, scoreParam, isCancelled = false) {
     if (actualPlayerName && typeof scoreParam === "number") {
       // This condition should always be true if called from time-up scenario
       // because startGame validates the name, and score is always numeric.
-      if (!playerScores[selectedDuration]) {
-        playerScores[selectedDuration] = {};  
+      if (!playerScores[activeDuration]) {
+        playerScores[activeDuration] = {};
       }
-      const currentScore = playerScores[selectedDuration][actualPlayerName] || 0;
+      const currentScore = playerScores[activeDuration][actualPlayerName] || 0;
       if (scoreParam > currentScore) {
-        playerScores[selectedDuration][actualPlayerName] = scoreParam;
+        playerScores[activeDuration][actualPlayerName] = scoreParam;
       }
       updateHighScoreDisplay();
       showCustomMessage(
