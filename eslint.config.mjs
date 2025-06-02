@@ -15,14 +15,15 @@ export default defineConfig([
     },
   },
   {
-    files: ["cypress/**/*.js"], // khusus untuk file Cypress
+    files: ["cypress/**/*.js"],
     languageOptions: {
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.mocha,       // untuk describe, it, beforeEach, dll
-        Cypress: "readonly",    // untuk Cypress class
-        cy: "readonly",         // untuk cy object
+        ...globals.mocha,     // untuk describe, it, before, after, dll
+        ...globals.chai,      // untuk expect, assert, should
+        Cypress: "readonly",  // Cypress class
+        cy: "readonly",       // cy object
       },
     },
   },
