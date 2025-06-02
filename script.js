@@ -75,14 +75,15 @@ if (messageBoxButton && messageBoxOverlay) {
  * @param {HTMLElement} selectedBtn - The button element that was clicked.
  */
 function setActiveDurationButton(selectedBtn) {
-  durationButtons.forEach((button) => {
-    selectedDuration = parseInt(this.getAttribute("data-duration"));
+  document.querySelectorAll(".duration-btn").forEach((button) => {
     button.classList.remove("active");
   });
   if (selectedBtn) {
     selectedBtn.classList.add("active");
+    selectedDuration = parseInt(selectedBtn.getAttribute("data-duration"));
+    const timeLeftDisplay = document.getElementById("time-left-display");
     if (timeLeftDisplay) {
-      timeLeftDisplay.textContent = selectedBtn.dataset.duration;
+      timeLeftDisplay.textContent = selectedDuration;
     }
   }
 }
