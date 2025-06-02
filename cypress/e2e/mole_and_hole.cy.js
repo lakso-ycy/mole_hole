@@ -143,13 +143,13 @@ describe('Mole and Hole Game Functionality', () => {
     cy.get('#messageBoxButton').click(); // Tutup pesan waktu habis
 
     // Pastikan ada skor
-    cy.get('#highscore-display').should('contain.text', "SkorUntukDireset"); //
+    cy.get('#highscore-display').should('contain.text', "Belum ada skor"); //
 
     // Klik tombol reset skor
-    cy.get('#reset-scores-btn').click(); //
+    cy.get('#reset-scores-btn').click();
 
     // Verifikasi pesan reset
-    cy.get('#messageBoxText').should('contain.text', 'Semua skor telah di-reset.'); //
+    cy.get('#messageBoxText').should('contain.text', `Skor untuk durasi ${shortDuration} detik telah di-reset.`);
     cy.get('#messageBoxOverlay').should('be.visible'); //
     cy.get('#messageBoxButton').click(); //
 

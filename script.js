@@ -457,11 +457,11 @@ function updateHighScoreDisplay() {
  * Resets all player scores.
  */
 function resetScores() {
-  for (const name in playerScores) {
-    delete playerScores[name];
+  if (playerScores[selectedDuration]) {
+    delete playerScores[selectedDuration]; // hanya hapus skor untuk durasi aktif
   }
-  updateHighScoreDisplay();
-  showCustomMessage("Semua skor telah di-reset.");
+  updateHighScoreDisplay(); // perbarui tampilan
+  showCustomMessage(`Skor untuk durasi ${selectedDuration} detik telah di-reset.`);
 }
 
 // Event listener for the reset scores button
@@ -479,4 +479,3 @@ document.addEventListener('mouseup', () => {
     document.body.classList.remove('hammer-hit.png');
   }, 50); // ganti kecepatan animasi (ms) jika mau
 });
-
