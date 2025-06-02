@@ -421,6 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (countdownArea) {
     countdownArea.style.display = "block";
   }
+  if (cancelBtn) cancelBtn.style.display = "none";
   updateHighScoreDisplay(); // Load/display high scores if any
 });
 
