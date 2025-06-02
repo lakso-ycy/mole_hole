@@ -1,40 +1,121 @@
-# Pipeline untuk Game Hole and Mole (HTML, CSS, JavaScript)
-
 trigger:
-  - main # Ganti dengan nama branch utama Anda jika berbeda (misalnya, master, develop)
+- main # Ganti dengan nama branch utama Anda jika berbeda (misalnya, master, develop)
+
+pr:
+- main # Juga berjalan saat ada Pull Request ke branch main
 
 pool:
   vmImage: "ubuntu-latest" # Menggunakan agen Linux terbaru
 
-steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: "22.x" # Tentukan versi Node.js yang ingin digunakan. 18.x adalah pilihan LTS yang baik.
-    displayName: "Install Node.js"
+variables:
+  nodeVersion: '20.x' # Versi LTS Node.js (sesuaikan jika ada versi LTS yang lebih baru)
+  # --- Konfigurasi SonarQube - WAJIB SESUAIKAN INI ---
+  # Ganti 'NamaKoneksiLayananSonarQubeAnda' dengan nama Service Connection yang Anda buat di Azure DevOps
+  SONARQUBE_SERVICE_CONNECTION: 'azurevm' # PASTIKAN INI NAMA SERVICE CONNECTION ANDA
+  # Ganti dengan Project Key dan Project Name yang unik untuk proyek ini di SonarQube
+  SONARQUBE_PROJECT_KEY: 'mole-and-hole' # PASTIKAN INI PROJECT KEY ANDA DI SONARQUBE
+  SONARQUBE_PROJECT_NAME: 'mole and hole' # PASTIKAN INI DISPLAY NAME ANDA DI SONARQUBE
+  # Jika menggunakan SonarCloud, Anda mungkin juga perlu SONAR_ORGANIZATION
+  # SONAR_ORGANIZATION: 'kunci-organisasi-sonarcloud-anda'
 
-  # Langkah untuk menyalin file-file game ke Artifact Staging Directory
-  # Ini adalah direktori sementara di agen build sebelum file dipublikasikan.
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: "$(Build.SourcesDirectory)" # Ini adalah root direktori dari kode sumber Anda
-      Contents: | # Daftar file dan folder yang akan disalin
-        index.html
-        style.css
-        script.js
-        img/** # Menyalin semua isi dari folder 'img'
-        sounds/** # Menyalin semua isi dari folder 'sounds'
-        hammer-hit.png
-        hammer.png
-        README.md   # Opsional, jika Anda ingin menyertakan README
-        # Jangan sertakan .DS_Store karena itu file sistem macOS
-      TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files" # Nama folder di dalam staging directory
-    displayName: "Copy game files to Staging Directory"
+stages:
+- stage: CI_Build_Test_Analyze
+  displayName: 'CI - Build, Test, and Analyze'
+  jobs:
+  - job: MainJob
+    displayName: 'Install, Lint, Analyze, and E2E Test'
+    steps:
+    # Langkah 1: Setup Node.js
+    - task: NodeTool@0
+      inputs:
+        versionSpec: $(nodeVersion)
+      displayName: 'Install Node.js $(nodeVersion)'
 
-  # Langkah untuk memublikasikan artifact
-  # Artifact ini akan berisi file-file game Anda dan bisa diunduh atau digunakan oleh release pipeline.
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files" # Path ke folder yang ingin dipublikasikan
-      ArtifactName: "HoleAndMoleGameDrop" # Nama untuk artifact Anda
-      publishLocation: "Container" # Lokasi penyimpanan artifact (biasanya 'Container')
-    displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+    # Langkah 2: Install Dependensi Proyek
+    # Membaca package.json dan package-lock.json Anda untuk menginstal dependensi.
+    - script: npm install
+      displayName: 'Install project dependencies (npm install)'
+
+    # Langkah 3: Linting
+    # Menjalankan skrip "lint" yang Anda definisikan di package.json.
+    # Pastikan ESLint dan Stylelint sudah dikonfigurasi dengan benar di proyek Anda.
+    - script: npm run lint
+      displayName: 'Run Linter (ESLint & Stylelint)'
+      continueOnError: true # Biarkan pipeline lanjut meskipun ada error linting, tapi periksa hasilnya.
+
+    # Langkah 4: Integrasi SonarQube (Analisis Kualitas Kode Statis)
+    # Pastikan ekstensi SonarQube (bukan SonarCloud) sudah terinstal di organisasi Azure DevOps Anda.
+    - task: SonarQubePrepare@5
+      inputs:
+        SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+        cliProjectName: $(SONARQUBE_PROJECT_NAME)
+        extraProperties: | # Opsional: untuk properti tambahan SonarQube
+          sonar.sources=.
+          sonar.exclusions=**/node_modules/**,cypress/** # Direkomendasikan untuk diaktifkan
+      displayName: 'Prepare SonarQube Analysis Configuration'
+
+    - task: SonarQubeAnalyze@5
+      displayName: 'Run SonarQube Analysis'
+      # continueOnError: true # Pertimbangkan apakah pipeline boleh lanjut jika analisis SonarQube gagal
+
+    - task: SonarQubePublish@5
+      displayName: 'Publish SonarQube Quality Gate Result'
+      # continueOnError: true # Pertimbangkan apakah pipeline boleh lanjut jika Quality Gate SonarQube gagal
+
+    # Langkah 5: Menjalankan Aplikasi untuk Tes Cypress
+    # Menggunakan http-server dari devDependencies Anda di package.json.
+    - script: npx http-server -p 8080 &
+      displayName: 'Start HTTP Server for Cypress (Port 8080)'
+      workingDirectory: $(System.DefaultWorkingDirectory) # Pastikan ini direktori root proyek Anda
+
+    # Langkah 6: Menjalankan Tes Cypress
+    # Pastikan cypress.config.js (atau cypress.json) Anda dikonfigurasi dengan benar.
+    # Anda perlu membuat tes Cypress terlebih dahulu di folder 'cypress' Anda.
+    - script: npx cypress run
+      displayName: 'Run Cypress E2E Tests'
+      env:
+        CYPRESS_BASE_URL: 'http://localhost:8080' # Mengarahkan Cypress ke server lokal di agen
+      continueOnError: true # <<< MODIFIKASI DI SINI: Pipeline akan lanjut meski tes Cypress gagal
+
+    # Langkah 7: Publikasikan Hasil Tes Cypress
+    # Task ini akan tetap berjalan karena kondisi 'succeededOrFailed()'
+    # dan akan melaporkan kegagalan tes jika ada.
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/results/cypress-results-*.xml' # Sesuaikan path jika perlu
+        mergeTestResults: true
+        failTaskOnFailedTests: true # Biarkan true agar job ditandai gagal jika tes gagal,
+                                      # tapi pipeline tetap lanjut karena continueOnError di task Cypress.
+      displayName: 'Publish Cypress Test Results'
+      condition: succeededOrFailed()
+
+    # Langkah 8: Menyalin file-file game ke Artifact Staging Directory
+    # Dilakukan setelah semua tes dan analisis selesai.
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: "$(Build.SourcesDirectory)"
+        Contents: |
+          index.html
+          style.css
+          script.js
+          img/**
+          sounds/**
+          hammer-hit.png # Jika ini aset yang perlu di-deploy
+          hammer.png   # Jika ini aset yang perlu di-deploy
+          README.md    # Opsional
+          # Jangan sertakan .DS_Store atau node_modules/
+        TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
+      displayName: "Copy game files to Staging Directory"
+
+    # Langkah 9: Memublikasikan artifact
+    # Artifact ini akan berisi file-file game Anda yang sudah lolos CI dan bisa digunakan oleh release pipeline.
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
+        ArtifactName: "HoleAndMoleGameDrop"
+        publishLocation: "Container"
+      displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
