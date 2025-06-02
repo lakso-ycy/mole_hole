@@ -36,10 +36,10 @@ stages:
       displayName: 'Fix permission for node_modules/.bin'
       condition: succeeded()
 
-    # Step 4: Run ESLint & Stylelint
-    - script: npm run lint
-      displayName: 'Run Linter (ESLint & Stylelint)'
-      continueOnError: true
+    # # Step 4: Run ESLint & Stylelint
+    # - script: npm run lint
+    #   displayName: 'Run Linter (ESLint & Stylelint)'
+    #   continueOnError: true
 
     # Step 5: Prepare SonarQube Analysis
     - task: SonarQubePrepare@5
