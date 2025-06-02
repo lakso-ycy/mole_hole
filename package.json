@@ -4,9 +4,9 @@
   "description": "this is a simple mole and hole a web based game built using html css js. <br/>\r where you have to catch the mole, whenever you click on mole you will get points.",
   "main": "script.js",
   "scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "lint": "eslint . --ext .js && stylelint \"**/*.css\""
-},
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .js && stylelint \"**/*.css\""
+  },
   "repository": {
     "type": "git",
     "url": "https://psofleksibel@dev.azure.com/psofleksibel/fp-pso-fleksibel/_git/fp-pso-fleksibel"
@@ -22,5 +22,8 @@
     "http-server": "^14.1.1",
     "stylelint": "^16.19.1",
     "stylelint-config-standard": "^38.0.0"
+  },
+  "dependencies": {
+    "fp-pso-fleksibel": "file:"
   }
 }
