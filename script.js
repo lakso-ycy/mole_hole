@@ -408,7 +408,7 @@ if (cancelBtn) {
     endGame(nameAtCancelTime, score, true);
   });
 }
-
+// zaidan
 // Initialize active duration button and countdown display on page load
 document.addEventListener("DOMContentLoaded", () => {
   const defaultActiveButton = document.querySelector(
