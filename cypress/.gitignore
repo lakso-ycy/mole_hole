@@ -1,0 +1,25 @@
+# Cypress artifacts
+cypress/screenshots/
+cypress/videos/
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Media files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp3
+*.wav
+
+# VSCode settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
