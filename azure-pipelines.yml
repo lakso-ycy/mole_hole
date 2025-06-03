@@ -42,8 +42,8 @@ stages:
     #   continueOnError: true
 
     # Step 5: Prepare SonarQube Analysis
-    - task: SonarQubePrepare@6
-      inputs
+    - task: SonarQubePrepare@5
+      inputs:
         SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
         scannerMode: 'CLI'
         configMode: 'manual'
@@ -54,10 +54,10 @@ stages:
           sonar.exclusions=**/node_modules/**,cypress/**
       displayName: 'Prepare SonarQube Analysis Configuration'
 
-    - task: SonarQubeAnalyze@6
+    - task: SonarQubeAnalyze@5
       displayName: 'Run SonarQube Analysis'
 
-    - task: SonarQubePublish@6
+    - task: SonarQubePublish@5
       displayName: 'Publish SonarQube Quality Gate Result'
 
     # Step 6: Start Server for Cypress
