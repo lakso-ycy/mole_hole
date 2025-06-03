@@ -8,10 +8,19 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  nodeVersion: "20.x"
-  SONARQUBE_SERVICE_CONNECTION: "azurevm"
-  SONARQUBE_PROJECT_KEY: "mole-and-hole"
-  SONARQUBE_PROJECT_NAME: "mole and hole"
+  - group: deploy_token_fleksibel
+
+  - name: nodeVersion
+    value: "20.x"
+
+  - name: SONARQUBE_SERVICE_CONNECTION
+    value: "azurevm"
+
+  - name: SONARQUBE_PROJECT_KEY
+    value: "mole-and-hole"
+
+  - name: SONARQUBE_PROJECT_NAME
+    value: "mole and hole"
 
 stages:
   - stage: CI_Build_Test_Analyze
@@ -104,3 +113,18 @@ stages:
               ArtifactName: "HoleAndMoleGameDrop"
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+
+  - stage: Deploy_Static_Web_App
+    displayName: "CD - Deploy to Azure Static Web App"
+    dependsOn: CI_Build_Test_Analyze
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        displayName: "Deploy Game to Azure Static Web App"
+        steps:
+          - task: AzureStaticWebApp@0
+            inputs:
+              app_location: "$(Build.ArtifactStagingDirectory)/game-files"
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
+              output_location: "" # kosongkan karena tidak pakai build tools
+            displayName: "Deploy to Azure Static Web App"
