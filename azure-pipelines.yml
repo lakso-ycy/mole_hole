@@ -1,110 +1,114 @@
-trigger:
-- main
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hole and Mole Game</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Catch me, If you can</h1>
 
-pr:
-- main
+      <div class="player-section">
+        <div class="name-input">
+          <input
+            type="text"
+            id="player-name"
+            placeholder="Masukkan nama kamu..."
+          />
+        </div>
+        <div class="action-buttons main-action-buttons">
+          <button class="controls-content start-btn">Start</button>
+          <button class="controls-content cancel-btn">Cancel</button>
+        </div>
+      </div>
 
-pool:
-  vmImage: "ubuntu-latest"
+      <h2 class="score-block">Score: <span class="score">0</span></h2>
 
-variables:
-  nodeVersion: '20.x'
-  SONARQUBE_SERVICE_CONNECTION: 'azurevm'
-  SONARQUBE_PROJECT_KEY: 'mole-and-hole'
-  SONARQUBE_PROJECT_NAME: 'mole and hole'
+      <div class="levels">
+        <div>
+          <input type="radio" name="level" id="easy" checked /><label for="easy"
+            >Easy</label
+          >
+        </div>
+        <div>
+          <input type="radio" name="level" id="medium" /><label for="medium"
+            >Medium</label
+          >
+        </div>
+        <div>
+          <input type="radio" name="level" id="hard" /><label for="hard"
+            >Hard</label
+          >
+        </div>
+      </div>
 
-stages:
-- stage: CI_Build_Test_Analyze
-  displayName: 'CI - Build, Test, and Analyze'
-  jobs:
-  - job: MainJob
-    displayName: 'Install, Lint, Analyze, and E2E Test'
-    steps:
+      <div class="main-content-wrapper">
+        <div class="left-sidebar-controls">
+          <div class="image-controls-section">
+            <h3>Mole Image</h3>
+            <div class="mole-image-selector">
+              <label for="mole-image-upload">Ganti Gambar Tikus:</label>
+              <input type="file" id="mole-image-upload" accept="image/*" />
+              <button id="remove-mole-image-btn" class="remove-image-btn">
+                Hapus Foto Lagi Ah
+              </button>
+            </div>
+          </div>
 
-    # Step 1: Install Node.js
-    - task: NodeTool@0
-      inputs:
-        versionSpec: $(nodeVersion)
-      displayName: 'Install Node.js $(nodeVersion)'
+          <div class="time-controls-section">
+            <h3>Game Duration</h3>
+            <div class="duration-selector">
+              <button class="duration-btn" data-duration="15">15 Detik</button>
+              <button class="duration-btn active" data-duration="20">20 Detik</button>
+              <button class="duration-btn" data-duration="25">25 Detik</button>
+            </div>
+            <div id="countdown-area" class="countdown-display">
+              Waktu: <span id="time-left-display">20</span> detik
+            </div>
+          </div>
+        </div>
+        
 
-    # Step 2: Install Dependencies
-    - script: npm ci
-      displayName: 'Clean install project dependencies (npm ci)'
+        <div class="game-area-wrapper">
+          <div class="game">
+            <div class="hole hole1"><div class="mole"></div></div>
+            <div class="hole hole2"><div class="mole"></div></div>
+            <div class="hole hole3"><div class="mole"></div></div>
+            <div class="hole hole4"><div class="mole"></div></div>
+            <div class="hole hole5"><div class="mole"></div></div>
+            <div class="hole hole6"><div class="mole"></div></div>
+          </div>
+        </div>
 
-    # Step 3: Fix Permissions (Prevent Permission Denied)
-    - script: chmod -R +x ./node_modules/.bin
-      displayName: 'Fix permission for node_modules/.bin'
-      condition: succeeded()
+        <div class="right-sidebar-highscore">
+          <div class="highscore-section">
+            <h3>High Score</h3>
+            <div id="highscore-display">
+              <p>Player: <span id="highscore-player-name">-</span></p>
+              <p>Score: <span id="highscore-player-score">-</span></p>
+            </div>
+            <button id="reset-scores-btn" class="controls-content reset-btn">
+              Reset Score
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="message-box-overlay" id="messageBoxOverlay">
+      <div class="message-box">
+        <p id="messageBoxText"></p>
+        <button id="messageBoxButton">OK</button>
+      </div>
+    </div>
 
-    # Step 4: Prepare SonarQube Analysis
-    - task: SonarQubePrepare@7
-      inputs:
-        SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-        cliProjectName: $(SONARQUBE_PROJECT_NAME)
-        extraProperties: |
-          sonar.sources=.
-          sonar.exclusions=**/node_modules/**,cypress/**
-      displayName: 'Prepare SonarQube Analysis Configuration'
-
-    - task: SonarQubeAnalyze@7
-      displayName: 'Run SonarQube Analysis'
-
-    - task: SonarQubePublish@7
-      displayName: 'Publish SonarQube Quality Gate Result'
-
-    # Step 6: Start Server for Cypress
-    - script: npx http-server -p 8080 &
-      displayName: 'Start HTTP Server for Cypress (Port 8080)'
-      workingDirectory: $(System.DefaultWorkingDirectory)
-
-    # Step 6.5: Create results directory
-    - script: mkdir -p results
-      displayName: 'Create results directory for Cypress output'
-
-    # Step 7: Run Cypress Tests
-    - script: npx cypress run --reporter junit --reporter-options "mochaFile=results/cypress-results-[hash].xml"
-      displayName: 'Run Cypress E2E Tests'
-      env:
-        CYPRESS_BASE_URL: 'http://localhost:8080'
-      continueOnError: true
-
-    # Optional Debug: List result files
-    - script: ls -R results
-      displayName: 'List Cypress test result files'
-
-    # Step 8: Publish Cypress Test Results
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: 'results/cypress-results-*.xml'
-        mergeTestResults: true
-        failTaskOnFailedTests: true
-      displayName: 'Publish Cypress Test Results'
-      condition: succeededOrFailed()
-
-    # Step 9: Copy Game Files to Staging
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: "$(Build.SourcesDirectory)"
-        Contents: |
-          index.html
-          style.css
-          script.js
-          img/**
-          sounds/**
-          hammer-hit.png
-          hammer.png
-          README.md
-        TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
-      displayName: "Copy game files to Staging Directory"
-
-    # Step 10: Publish Build Artifacts
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
-        ArtifactName: "HoleAndMoleGameDrop"
-        publishLocation: "Container"
-      displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+    <audio id="hit-sound" src="sounds/punch.mp3" preload="auto"></audio>
+    <script src="script.js"></script>
+  </body>
+</html>
