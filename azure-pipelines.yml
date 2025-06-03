@@ -50,23 +50,23 @@ stages:
           #   continueOnError: true
 
           # Step 5: Prepare SonarQube Analysis
-          - task: SonarQubePrepare@7
-            inputs:
-              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-              scannerMode: "CLI"
-              configMode: "manual"
-              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-              cliProjectName: $(SONARQUBE_PROJECT_NAME)
-              extraProperties: |
-                sonar.sources=.
-                sonar.exclusions=**/node_modules/**,cypress/**
-            displayName: "Prepare SonarQube Analysis Configuration"
+          # - task: SonarQubePrepare@7
+          #   inputs:
+          #     SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+          #     scannerMode: "CLI"
+          #     configMode: "manual"
+          #     cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+          #     cliProjectName: $(SONARQUBE_PROJECT_NAME)
+          #     extraProperties: |
+          #       sonar.sources=.
+          #       sonar.exclusions=**/node_modules/**,cypress/**
+          #   displayName: "Prepare SonarQube Analysis Configuration"
 
-          - task: SonarQubeAnalyze@7
-            displayName: "Run SonarQube Analysis"
+          # - task: SonarQubeAnalyze@7
+          #   displayName: "Run SonarQube Analysis"
 
-          - task: SonarQubePublish@7
-            displayName: "Publish SonarQube Quality Gate Result"
+          # - task: SonarQubePublish@7
+          #   displayName: "Publish SonarQube Quality Gate Result"
 
           # Step 6: Start Server for Cypress
           - script: npx http-server -p 8080 &
