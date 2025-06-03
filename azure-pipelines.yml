@@ -126,17 +126,14 @@ stages:
             inputs:
               buildType: current
               artifactName: HoleAndMoleGameDrop
-              downloadPath: $(Pipeline.Workspace)
+              downloadPath: $(System.DefaultWorkingDirectory)
 
-          - script: ls -la "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
+          - script: ls -la "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop"
             displayName: "🔍 Debug - Cek isi folder setelah download"
-
-          - script: sleep 5
-            displayName: "⏱️ Delay sebelum deploy (pastikan folder ready)"
 
           - task: AzureStaticWebApp@0
             inputs:
-              app_location: "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
+              app_location: "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop"
               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
               output_location: ""
             displayName: "🚀 Deploy to Azure Static Web App"
