@@ -65,7 +65,7 @@ stages:
       displayName: 'Start HTTP Server for Cypress (Port 8080)'
       workingDirectory: $(System.DefaultWorkingDirectory)
 
-    # Step 7: Run Cypress Tests
+    # Step 7: Run Cypress Tests (COBA yang lama)
     - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
       displayName: 'Run Cypress E2E Tests'
       env:
