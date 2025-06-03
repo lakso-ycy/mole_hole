@@ -1,32 +1,139 @@
-name: Azure Static Web Apps CI/CD
+# trigger:
+#   - main
 
 pr:
-  branches:
-    include:
-      - main
-trigger:
-  branches:
-    include:
-      - main
+  - main
 
-jobs:
-- job: build_and_deploy_job
-  displayName: Build and Deploy Job
-  condition: or(eq(variables['Build.Reason'], 'Manual'),or(eq(variables['Build.Reason'], 'PullRequest'),eq(variables['Build.Reason'], 'IndividualCI')))
-  pool:
-    vmImage: ubuntu-latest
-  variables:
-  - group: Azure-Static-Web-Apps-yellow-desert-0f7d2e410-variable-group
-  steps:
-  - checkout: self
-    submodules: true
-  - task: AzureStaticWebApp@0
-    inputs:
-      azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_YELLOW_DESERT_0F7D2E410)
-###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-# For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-      app_location: "/" # App source code path
-      api_location: "" # Api source code path - optional
-      output_location: "" # Built app content directory - optional
-###### End of Repository/Build Configurations ######
+pool:
+  vmImage: "ubuntu-latest"
 
+variables:
+  - group: deploy_token_fleksibel
+
+  - name: nodeVersion
+    value: "20.x"
+
+  - name: SONARQUBE_SERVICE_CONNECTION
+    value: "azurevm"
+
+  - name: SONARQUBE_PROJECT_KEY
+    value: "mole-and-hole"
+
+  - name: SONARQUBE_PROJECT_NAME
+    value: "mole and hole"
+
+stages:
+  - stage: CI_Build_Test_Analyze
+    displayName: "CI - Build, Test, and Analyze"
+    jobs:
+      - job: MainJob
+        displayName: "Install, Lint, Analyze, and E2E Test"
+        steps:
+          # Step 1: Install Node.js
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: "Install Node.js $(nodeVersion)"
+
+          # Step 2: Install Dependencies
+          - script: npm ci
+            displayName: "Clean install project dependencies (npm ci)"
+
+          # Step 3: Fix Permissions (Prevent Permission Denied)
+          - script: chmod -R +x ./node_modules/.bin
+            displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
+
+          # # Step 4: Run ESLint & Stylelint
+          # - script: npm run lint
+          #   displayName: 'Run Linter (ESLint & Stylelint)'
+          #   continueOnError: true
+
+          # Step 5: Prepare SonarQube Analysis
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+              scannerMode: "CLI"
+              configMode: "manual"
+              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+              cliProjectName: $(SONARQUBE_PROJECT_NAME)
+              extraProperties: |
+                sonar.sources=.
+                sonar.exclusions=**/node_modules/**,cypress/**
+            displayName: "Prepare SonarQube Analysis Configuration"
+
+          - task: SonarQubeAnalyze@7
+            displayName: "Run SonarQube Analysis"
+
+          - task: SonarQubePublish@7
+            displayName: "Publish SonarQube Quality Gate Result"
+
+          # Step 6: Start Server for Cypress
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080)"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+          # Step 7: Run Cypress Tests SSS
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests"
+            env:
+              CYPRESS_BASE_URL: "http://localhost:8080"
+            continueOnError: true
+
+          # Step 8: Publish Cypress Test Results
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/results/cypress-results-*.xml"
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            displayName: "Publish Cypress Test Results"
+            condition: succeededOrFailed()
+
+          # Step 9: Copy Game Files to Staging
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.SourcesDirectory)"
+              Contents: |
+                index.html
+                style.css
+                script.js
+                img/**
+                sounds/**
+                hammer-hit.png
+                hammer.png
+                README.md
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+            displayName: "Copy game files to Staging Directory"
+
+          # Step 10: Publish Build Artifactss
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              ArtifactName: "HoleAndMoleGameDrop"
+              publishLocation: "Container"
+            displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+
+  - stage: Deploy_Static_Web_App
+    displayName: "CD - Deploy to Azure Static Web App"
+    dependsOn: CI_Build_Test_Analyze
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        displayName: "Deploy Game to Azure Static Web App"
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: current
+              artifactName: HoleAndMoleGameDrop
+              downloadPath: $(System.ArtifactsDirectory)
+
+          - task: AzureStaticWebApp@0
+            inputs:
+              app_location: ""
+              api_location: ""
+              output_location: ""
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" # Dari variable group Anda
+              skip_app_build: true
+              workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
+            displayName: "🚀 Deploy to Azure Static Web App"

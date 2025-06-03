@@ -9,24 +9,21 @@ pool:
 
 variables:
   - group: deploy_token_fleksibel
-
   - name: nodeVersion
     value: "20.x"
-
   - name: SONARQUBE_SERVICE_CONNECTION
     value: "azurevm"
-
   - name: SONARQUBE_PROJECT_KEY
     value: "mole-and-hole"
-
   - name: SONARQUBE_PROJECT_NAME
     value: "mole and hole"
 
 stages:
-  - stage: CI_Build_Test_Analyze
-    displayName: "CI - Build, Test, and Analyze"
+  # STAGE 1: Build, Test, and Analyze
+  - stage: Build_Test_Analyze
+    displayName: "1. Build - Test, and Analyze"
     jobs:
-      - job: MainJob
+      - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
           # Step 1: Install Node.js
@@ -71,14 +68,14 @@ stages:
           # Step 6: Start Server for Cypress
           - script: npx http-server -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
-            workingDirectory: $(System.DefaultWorkingDirectory)
+            workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
-          # Step 7: Run Cypress Tests SSS
+          # Step 7: Run Cypress Tests
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: true
+            continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
 
           # Step 8: Publish Cypress Test Results
           - task: PublishTestResults@2
@@ -86,11 +83,25 @@ stages:
               testResultsFormat: "JUnit"
               testResultsFiles: "**/results/cypress-results-*.xml"
               mergeTestResults: true
-              failTaskOnFailedTests: true
+              failTaskOnFailedTests: true # Ini akan mengagalkan job jika ada tes yang gagal
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed()
 
-          # Step 9: Copy Game Files to Staging
+  # STAGE 2: Staging - Prepare Artifact
+  - stage: Staging
+    displayName: "2. Staging - Prepare Deploy Artifact"
+    dependsOn: Build_Test_Analyze # Bergantung pada suksesnya stage Build
+    condition: succeeded()
+    jobs:
+      - job: StagingJob
+        displayName: "Create Release Artifact"
+        steps:
+          # Langkah ini penting jika job berjalan pada agen yang berbeda atau konteks baru
+          # untuk mendapatkan akses ke source code yang mungkin dibutuhkan.
+          - checkout: self
+            displayName: "Checkout source code"
+
+          # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)"
@@ -106,7 +117,7 @@ stages:
               TargetFolder: "$(Build.ArtifactStagingDirectory)"
             displayName: "Copy game files to Staging Directory"
 
-          # Step 10: Publish Build Artifactss
+          # Step 10 (dari YAML lama): Publish Build Artifact
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)"
@@ -114,9 +125,10 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
+  # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
-    displayName: "CD - Deploy to Azure Static Web App"
-    dependsOn: CI_Build_Test_Analyze
+    displayName: "3. Deploy - Deploy to Azure Static Web App"
+    dependsOn: Staging # Bergantung pada suksesnya stage Staging
     condition: succeeded()
     jobs:
       - job: DeployJob
@@ -137,3 +149,4 @@ stages:
               skip_app_build: true
               workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
             displayName: "🚀 Deploy to Azure Static Web App"
+            
