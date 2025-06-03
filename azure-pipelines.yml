@@ -66,8 +66,8 @@ stages:
       workingDirectory: $(System.DefaultWorkingDirectory)
 
     # Step 7: Run Cypress Tests
-    - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-      displayName: 'Run Cypress E2E Tests'
+    - script: npx cypress run --reporter junit --reporter-options "mochaFile=results/cypress-results-[hash].xml"
+        displayName: 'Run Cypress E2E Tests'
       env:
         CYPRESS_BASE_URL: 'http://localhost:8080'
       continueOnError: true
@@ -76,7 +76,7 @@ stages:
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFiles: '**/results/cypress-results-*.xml'
+        testResultsFiles: 'results/cypress-results-*.xml'
         mergeTestResults: true
         failTaskOnFailedTests: true
       displayName: 'Publish Cypress Test Results'
