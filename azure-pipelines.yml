@@ -141,7 +141,7 @@ stages:
           - task: AzureStaticWebApp@0
             inputs:
               # Ganti app_location ini sesuai folder yang benar setelah cek hasil debug di atas
-              app_location: "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
+              app_location: "$(Build.ArtifactStagingDirectory)/game-files"
               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
               output_location: ""
             displayName: "Deploy to Azure Static Web App"
