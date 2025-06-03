@@ -8,11 +8,11 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  nodeVersion: "20.x"
-  SONARQUBE_SERVICE_CONNECTION: "azurevm"
-  SONARQUBE_PROJECT_KEY: "mole-and-hole"
-  SONARQUBE_PROJECT_NAME: "mole and hole"
-  AZURE_STATIC_WEB_APP_API_TOKEN: $(2769964ff393fc6efc2f69ea45aeb15d5bb10257284f0f9b59a818928c51ae3706-68d09266-9e62-4fa8-85c5-eb0a5d2311ae0100813069082610) # simpan token di Library variable group atau pipeline secret
+  - group: Secrets-Fleksibel
+    nodeVersion: "20.x"
+    SONARQUBE_SERVICE_CONNECTION: "azurevm"
+    SONARQUBE_PROJECT_KEY: "mole-and-hole"
+    SONARQUBE_PROJECT_NAME: "mole and hole"
 
 stages:
   - stage: CI_Build_Test_Analyze
@@ -125,6 +125,6 @@ stages:
                     app_location: "/" # lokasi root app kamu (ubah kalau beda)
                     api_location: "" # kosongkan kalau tidak pakai API
                     output_location: "" # output build kalau ada (kosong kalau langsung pakai root)
-                    azure_static_web_apps_api_token: $(2769964ff393fc6efc2f69ea45aeb15d5bb10257284f0f9b59a818928c51ae3706-68d09266-9e62-4fa8-85c5-eb0a5d2311ae0100813069082610)
+                    azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APP_API_TOKEN)
                     action: "upload"
                   displayName: "Deploy Static Web App"
