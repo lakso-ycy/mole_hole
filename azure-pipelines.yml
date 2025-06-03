@@ -98,7 +98,7 @@ stages:
         TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
       displayName: "Copy game files to Staging Directory"
 
-    # Step 10: Publish Build Artifacts
+    # Step 10: Publish Build Artifactss
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
