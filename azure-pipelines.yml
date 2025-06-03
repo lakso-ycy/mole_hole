@@ -133,7 +133,7 @@ stages:
 
           - task: AzureStaticWebApp@0
             inputs:
-              app_location: "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop/game-files"
+              app_location: "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop" # Jalur yang benar
               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
-              output_location: ""
+              output_location: "" # Tetap "" karena index.html ada di root app_location
             displayName: "🚀 Deploy to Azure Static Web App"
