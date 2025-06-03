@@ -36,12 +36,7 @@ stages:
       displayName: 'Fix permission for node_modules/.bin'
       condition: succeeded()
 
-    # # Step 4: Run ESLint & Stylelint
-    # - script: npm run lint
-    #   displayName: 'Run Linter (ESLint & Stylelint)'
-    #   continueOnError: true
-
-    # Step 5: Prepare SonarQube Analysis
+    # Step 4: Prepare SonarQube Analysis
     - task: SonarQubePrepare@7
       inputs:
         SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -65,12 +60,20 @@ stages:
       displayName: 'Start HTTP Server for Cypress (Port 8080)'
       workingDirectory: $(System.DefaultWorkingDirectory)
 
+    # Step 6.5: Create results directory
+    - script: mkdir -p results
+      displayName: 'Create results directory for Cypress output'
+
     # Step 7: Run Cypress Tests
     - script: npx cypress run --reporter junit --reporter-options "mochaFile=results/cypress-results-[hash].xml"
-        displayName: 'Run Cypress E2E Tests'
+      displayName: 'Run Cypress E2E Tests'
       env:
         CYPRESS_BASE_URL: 'http://localhost:8080'
       continueOnError: true
+
+    # Optional Debug: List result files
+    - script: ls -R results
+      displayName: 'List Cypress test result files'
 
     # Step 8: Publish Cypress Test Results
     - task: PublishTestResults@2
