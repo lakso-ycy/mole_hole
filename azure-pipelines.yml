@@ -114,19 +114,23 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
-jobs:
-  - job: DeployJob
-    displayName: "Deploy Game to Azure Static Web App"
-    steps:
-      - task: DownloadBuildArtifacts@0
-        inputs:
-          buildType: "current"
-          artifactName: "HoleAndMoleGameDrop"
-          downloadPath: "$(Pipeline.Workspace)"
+  - stage: Deploy_Static_Web_App
+    displayName: "CD - Deploy to Azure Static Web App"
+    dependsOn: CI_Build_Test_Analyze
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        displayName: "Deploy Game to Azure Static Web App"
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: "current"
+              artifactName: "HoleAndMoleGameDrop"
+              downloadPath: "$(Pipeline.Workspace)"
 
-      - task: AzureStaticWebApp@0
-        inputs:
-          app_location: "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
-          azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
-          output_location: ""
-        displayName: "Deploy to Azure Static Web App"
+          - task: AzureStaticWebApp@0
+            inputs:
+              app_location: "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
+              output_location: ""
+            displayName: "Deploy to Azure Static Web App"
