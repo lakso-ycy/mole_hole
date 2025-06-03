@@ -8,7 +8,7 @@ pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  - group: deploy_token_fleksibel
+  - group: azure-static-web-apps-thankful-sand-042232c10-variable-group
 
   - name: nodeVersion
     value: "20.x"
@@ -103,13 +103,13 @@ stages:
                 hammer-hit.png
                 hammer.png
                 README.md
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
+              TargetFolder: "$(Build.ArtifactStagingDirectory)"
             displayName: "Copy game files to Staging Directory"
 
           # Step 10: Publish Build Artifactss
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
               ArtifactName: "HoleAndMoleGameDrop"
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
@@ -126,16 +126,16 @@ stages:
             inputs:
               buildType: current
               artifactName: HoleAndMoleGameDrop
-              downloadPath: $(System.DefaultWorkingDirectory)
+              downloadPath: $(System.ArtifactsDirectory)
 
-          - script: ls -la "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop"
+          - script: ls -la "$(System.ArtifactsDirectory)/HoleAndMoleGameDrop"
             displayName: "🔍 Debug - Cek isi folder setelah download"
 
           - task: AzureStaticWebApp@0
             inputs:
-              app_location: "$(System.DefaultWorkingDirectory)/HoleAndMoleGameDrop"
+              app_location: "$(System.ArtifactsDirectory)/HoleAndMoleGameDrop" # Menunjuk ke artefak yang diunduh
               api_location: ""
               output_location: ""
-              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
-              skip_app_build: true
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN_THANKFUL_SAND_042232C10)" # Dari variable group Anda
+              skip_app_build: true # Sudah benar
             displayName: "🚀 Deploy to Azure Static Web App"
