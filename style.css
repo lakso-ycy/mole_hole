@@ -123,6 +123,7 @@ h1 {
 
 .cancel-btn[style*="display: none"] ~ .start-btn,
 .start-btn[style*="display: none"] {
+  opacity: 1;
   /* Adjust if only one button is visible */
 }
 
@@ -477,7 +478,7 @@ h1 {
 }
 
 .message-box button:hover {
-  background-color: #c0392b;
+  background-color: #ba392a;
 }
 
 @keyframes fade-in { /* Diubah dari fadeIn menjadi fade-in */
