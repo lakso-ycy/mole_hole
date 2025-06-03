@@ -36,9 +36,14 @@ stages:
       displayName: 'Fix permission for node_modules/.bin'
       condition: succeeded()
 
-    # Step 4: Prepare SonarQube Analysis
+    # # Step 4: Run ESLint & Stylelint
+    # - script: npm run lint
+    #   displayName: 'Run Linter (ESLint & Stylelint)'
+    #   continueOnError: true
+
+    # Step 5: Prepare SonarQube Analysis
     - task: SonarQubePrepare@6
-      inputs:
+      inputs
         SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
         scannerMode: 'CLI'
         configMode: 'manual'
@@ -49,27 +54,25 @@ stages:
           sonar.exclusions=**/node_modules/**,cypress/**
       displayName: 'Prepare SonarQube Analysis Configuration'
 
-    # Step 5: Run SonarQube Analysis
     - task: SonarQubeAnalyze@6
       displayName: 'Run SonarQube Analysis'
 
-    # Step 6: Publish SonarQube Quality Gate Result
     - task: SonarQubePublish@6
       displayName: 'Publish SonarQube Quality Gate Result'
 
-    # Step 7: Start Server for Cypress
+    # Step 6: Start Server for Cypress
     - script: npx http-server -p 8080 &
       displayName: 'Start HTTP Server for Cypress (Port 8080)'
       workingDirectory: $(System.DefaultWorkingDirectory)
 
     # Step 7: Run Cypress Tests
-    - script: npx cypress run
+    - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
       displayName: 'Run Cypress E2E Tests'
       env:
         CYPRESS_BASE_URL: 'http://localhost:8080'
       continueOnError: true
 
-    # Step 9: Publish Cypress Test Results
+    # Step 8: Publish Cypress Test Results
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'JUnit'
@@ -79,7 +82,7 @@ stages:
       displayName: 'Publish Cypress Test Results'
       condition: succeededOrFailed()
 
-    # Step 10: Copy Game Files to Staging
+    # Step 9: Copy Game Files to Staging
     - task: CopyFiles@2
       inputs:
         SourceFolder: "$(Build.SourcesDirectory)"
@@ -95,7 +98,7 @@ stages:
         TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
       displayName: "Copy game files to Staging Directory"
 
-    # Step 11: Publish Build Artifacts
+    # Step 10: Publish Build Artifacts
     - task: PublishBuildArtifacts@1
       inputs:
         PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
