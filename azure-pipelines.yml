@@ -122,14 +122,25 @@ stages:
       - job: DeployJob
         displayName: "Deploy Game to Azure Static Web App"
         steps:
+          # Download artifact yang sudah dipublish di tahap build
           - task: DownloadBuildArtifacts@0
             inputs:
               buildType: "current"
               artifactName: "HoleAndMoleGameDrop"
               downloadPath: "$(Pipeline.Workspace)"
 
+          # Debug: cek isi folder hasil download
+          - script: |
+              echo "Isi folder $(Pipeline.Workspace):"
+              ls -la $(Pipeline.Workspace)
+              echo "Isi folder $(Pipeline.Workspace)/HoleAndMoleGameDrop (jika ada):"
+              ls -la $(Pipeline.Workspace)/HoleAndMoleGameDrop || echo "Folder HoleAndMoleGameDrop tidak ditemukan"
+            displayName: "Debug list artifact folder"
+
+          # Deploy ke Azure Static Web Apps
           - task: AzureStaticWebApp@0
             inputs:
+              # Ganti app_location ini sesuai folder yang benar setelah cek hasil debug di atas
               app_location: "$(Pipeline.Workspace)/HoleAndMoleGameDrop"
               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
               output_location: ""
