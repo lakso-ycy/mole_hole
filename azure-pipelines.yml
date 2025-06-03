@@ -1,107 +1,130 @@
 trigger:
-- main
+  - main
 
 pr:
-- main
+  - main
 
 pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  nodeVersion: '20.x'
-  SONARQUBE_SERVICE_CONNECTION: 'azurevm'
-  SONARQUBE_PROJECT_KEY: 'mole-and-hole'
-  SONARQUBE_PROJECT_NAME: 'mole and hole'
+  nodeVersion: "20.x"
+  SONARQUBE_SERVICE_CONNECTION: "azurevm"
+  SONARQUBE_PROJECT_KEY: "mole-and-hole"
+  SONARQUBE_PROJECT_NAME: "mole and hole"
+  AZURE_STATIC_WEB_APP_API_TOKEN: $(2769964ff393fc6efc2f69ea45aeb15d5bb10257284f0f9b59a818928c51ae3706-68d09266-9e62-4fa8-85c5-eb0a5d2311ae0100813069082610) # simpan token di Library variable group atau pipeline secret
 
 stages:
-- stage: CI_Build_Test_Analyze
-  displayName: 'CI - Build, Test, and Analyze'
-  jobs:
-  - job: MainJob
-    displayName: 'Install, Lint, Analyze, and E2E Test'
-    steps:
+  - stage: CI_Build_Test_Analyze
+    displayName: "CI - Build, Test, and Analyze"
+    jobs:
+      - job: MainJob
+        displayName: "Install, Lint, Analyze, and E2E Test"
+        steps:
+          # Step 1: Install Node.js
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: "Install Node.js $(nodeVersion)"
 
-    # Step 1: Install Node.js
-    - task: NodeTool@0
-      inputs:
-        versionSpec: $(nodeVersion)
-      displayName: 'Install Node.js $(nodeVersion)'
+          # Step 2: Install Dependencies
+          - script: npm ci
+            displayName: "Clean install project dependencies (npm ci)"
 
-    # Step 2: Install Dependencies
-    - script: npm ci
-      displayName: 'Clean install project dependencies (npm ci)'
+          # Step 3: Fix Permissions (Prevent Permission Denied)
+          - script: chmod -R +x ./node_modules/.bin
+            displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
 
-    # Step 3: Fix Permissions (Prevent Permission Denied)
-    - script: chmod -R +x ./node_modules/.bin
-      displayName: 'Fix permission for node_modules/.bin'
-      condition: succeeded()
+          # # Step 4: Run ESLint & Stylelint
+          # - script: npm run lint
+          #   displayName: 'Run Linter (ESLint & Stylelint)'
+          #   continueOnError: true
 
-    # # Step 4: Run ESLint & Stylelint
-    # - script: npm run lint
-    #   displayName: 'Run Linter (ESLint & Stylelint)'
-    #   continueOnError: true
+          # Step 5: Prepare SonarQube Analysis
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+              scannerMode: "CLI"
+              configMode: "manual"
+              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+              cliProjectName: $(SONARQUBE_PROJECT_NAME)
+              extraProperties: |
+                sonar.sources=.
+                sonar.exclusions=**/node_modules/**,cypress/**
+            displayName: "Prepare SonarQube Analysis Configuration"
 
-    # Step 5: Prepare SonarQube Analysis
-    - task: SonarQubePrepare@7
-      inputs:
-        SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-        cliProjectName: $(SONARQUBE_PROJECT_NAME)
-        extraProperties: |
-          sonar.sources=.
-          sonar.exclusions=**/node_modules/**,cypress/**
-      displayName: 'Prepare SonarQube Analysis Configuration'
+          - task: SonarQubeAnalyze@7
+            displayName: "Run SonarQube Analysis"
 
-    - task: SonarQubeAnalyze@7
-      displayName: 'Run SonarQube Analysis'
+          - task: SonarQubePublish@7
+            displayName: "Publish SonarQube Quality Gate Result"
 
-    - task: SonarQubePublish@7
-      displayName: 'Publish SonarQube Quality Gate Result'
+          # Step 6: Start Server for Cypress
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080)"
+            workingDirectory: $(System.DefaultWorkingDirectory)
 
-    # Step 6: Start Server for Cypress
-    - script: npx http-server -p 8080 &
-      displayName: 'Start HTTP Server for Cypress (Port 8080)'
-      workingDirectory: $(System.DefaultWorkingDirectory)
+          # Step 7: Run Cypress Tests SSS
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests"
+            env:
+              CYPRESS_BASE_URL: "http://localhost:8080"
+            continueOnError: true
 
-    # Step 7: Run Cypress Tests SSS
-    - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-      displayName: 'Run Cypress E2E Tests'
-      env:
-        CYPRESS_BASE_URL: 'http://localhost:8080'
-      continueOnError: true
+          # Step 8: Publish Cypress Test Results
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "**/results/cypress-results-*.xml"
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+            displayName: "Publish Cypress Test Results"
+            condition: succeededOrFailed()
 
-    # Step 8: Publish Cypress Test Results
-    - task: PublishTestResults@2
-      inputs:
-        testResultsFormat: 'JUnit'
-        testResultsFiles: '**/results/cypress-results-*.xml'
-        mergeTestResults: true
-        failTaskOnFailedTests: true
-      displayName: 'Publish Cypress Test Results'
-      condition: succeededOrFailed()
+          # Step 9: Copy Game Files to Staging
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: "$(Build.SourcesDirectory)"
+              Contents: |
+                index.html
+                style.css
+                script.js
+                img/**
+                sounds/**
+                hammer-hit.png
+                hammer.png
+                README.md
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
+            displayName: "Copy game files to Staging Directory"
 
-    # Step 9: Copy Game Files to Staging
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: "$(Build.SourcesDirectory)"
-        Contents: |
-          index.html
-          style.css
-          script.js
-          img/**
-          sounds/**
-          hammer-hit.png
-          hammer.png
-          README.md
-        TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
-      displayName: "Copy game files to Staging Directory"
+          # Step 10: Publish Build Artifactss
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
+              ArtifactName: "HoleAndMoleGameDrop"
+              publishLocation: "Container"
+            displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
-    # Step 10: Publish Build Artifactss
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
-        ArtifactName: "HoleAndMoleGameDrop"
-        publishLocation: "Container"
-      displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+  - stage: CD_Deploy
+    displayName: "CD - Deploy to Azure Static Web App"
+    dependsOn: CI_Build_Test_Analyze
+    condition: succeeded() # deploy hanya kalau build & test berhasil
+    jobs:
+      - deployment: DeployJob
+        displayName: "Deploy Azure Static Web App"
+        environment: "production" # optional, bisa kamu sesuaikan
+        pool:
+          vmImage: "ubuntu-latest"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureStaticWebApp@0
+                  inputs:
+                    app_location: "/" # lokasi root app kamu (ubah kalau beda)
+                    api_location: "" # kosongkan kalau tidak pakai API
+                    output_location: "" # output build kalau ada (kosong kalau langsung pakai root)
+                    azure_static_web_apps_api_token: $(2769964ff393fc6efc2f69ea45aeb15d5bb10257284f0f9b59a818928c51ae3706-68d09266-9e62-4fa8-85c5-eb0a5d2311ae0100813069082610)
+                    action: "upload"
+                  displayName: "Deploy Static Web App"
