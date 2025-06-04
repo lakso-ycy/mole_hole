@@ -123,8 +123,7 @@ h1 {
 
 .cancel-btn[style*="display: none"] ~ .start-btn,
 .start-btn[style*="display: none"] {
-  opacity: 1;
-  /* Adjust if only one button is visible */
+  opacity: 1;/* Adjust if only one button is visible */
 }
 
 .score-block {
