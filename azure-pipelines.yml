@@ -114,13 +114,13 @@ stages:
                 hammer-hit.png
                 hammer.png
                 README.md
-              TargetFolder: "$(Build.ArtifactStagingDirectory)"
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
             displayName: "Copy game files to Staging Directory"
 
           # Step 10 (dari YAML lama): Publish Build Artifact
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)"
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
               ArtifactName: "HoleAndMoleGameDrop"
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
@@ -149,4 +149,3 @@ stages:
               skip_app_build: true
               workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
             displayName: "🚀 Deploy to Azure Static Web App"
-            
