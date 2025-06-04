@@ -9,6 +9,7 @@ describe("Mole and Hole Game Functionality", () => {
 
   it("should load the game page with initial elements visible", () => {
     cy.get("h1").should("contain.text", "Catch me, If you can"); //
+    cy.get(".start-btn").invoke("text").should("include", "Start");
     cy.get("#player-name").should("be.visible"); //
     cy.get(".start-btn").should("be.visible"); //
     cy.get(".cancel-btn").should("not.be.visible"); //
@@ -179,6 +180,7 @@ describe("Mole and Hole Game Functionality", () => {
 
     // Klik tombol reset skor
     cy.get("#reset-scores-btn").click();
+    
 
     // Verifikasi pesan reset
     cy.get("#messageBoxText").should(
@@ -190,5 +192,16 @@ describe("Mole and Hole Game Functionality", () => {
 
     // Verifikasi high score kembali ke "Belum ada skor"
     cy.get("#highscore-display").should("contain.text", "Belum ada skor"); //
+  });
+
+  describe("Game test", () => {
+    it("should show Start button", () => {
+      cy.visit("/");
+      cy.get(".start-btn").should("have.text", "Start");
+    });
+  });
+
+  it("should have correct label on Reset Score button", () => {
+    cy.get("#reset-scores-btn").should("have.text", "Reset Score");
   });
 });
