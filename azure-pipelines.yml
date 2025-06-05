@@ -1,151 +1,151 @@
-trigger:
-  - main
+# trigger:
+#   - main
 
-pr:
-  - main
+# pr:
+#   - main
 
-pool:
-  vmImage: "ubuntu-latest"
+# pool:
+#   vmImage: "ubuntu-latest"
 
-variables:
-  - group: deploy_token_fleksibel
-  - name: nodeVersion
-    value: "20.x"
-  - name: SONARQUBE_SERVICE_CONNECTION
-    value: "azurevm"
-  - name: SONARQUBE_PROJECT_KEY
-    value: "mole-and-hole"
-  - name: SONARQUBE_PROJECT_NAME
-    value: "mole and hole"
+# variables:
+#   - group: deploy_token_fleksibel
+#   - name: nodeVersion
+#     value: "20.x"
+#   - name: SONARQUBE_SERVICE_CONNECTION
+#     value: "azurevm"
+#   - name: SONARQUBE_PROJECT_KEY
+#     value: "mole-and-hole"
+#   - name: SONARQUBE_PROJECT_NAME
+#     value: "mole and hole"
 
-stages:
-  # STAGE 1: Build, Test, and Analyze
-  - stage: Build_Test_Analyze
-    displayName: "1. Build - Test, and Analyze"
-    jobs:
-      - job: BuildJob
-        displayName: "Install, Lint, Analyze, and E2E Test"
-        steps:
-          # Step 1: Install Node.js
-          - task: NodeTool@0
-            inputs:
-              versionSpec: $(nodeVersion)
-            displayName: "Install Node.js $(nodeVersion)"
+# stages:
+#   # STAGE 1: Build, Test, and Analyze
+#   - stage: Build_Test_Analyze
+#     displayName: "1. Build - Test, and Analyze"
+#     jobs:
+#       - job: BuildJob
+#         displayName: "Install, Lint, Analyze, and E2E Test"
+#         steps:
+#           # Step 1: Install Node.js
+#           - task: NodeTool@0
+#             inputs:
+#               versionSpec: $(nodeVersion)
+#             displayName: "Install Node.js $(nodeVersion)"
 
-          # Step 2: Install Dependencies
-          - script: npm ci
-            displayName: "Clean install project dependencies (npm ci)"
+#           # Step 2: Install Dependencies
+#           - script: npm ci
+#             displayName: "Clean install project dependencies (npm ci)"
 
-          # Step 3: Fix Permissions (Prevent Permission Denied)
-          - script: chmod -R +x ./node_modules/.bin
-            displayName: "Fix permission for node_modules/.bin"
-            condition: succeeded()
+#           # Step 3: Fix Permissions (Prevent Permission Denied)
+#           - script: chmod -R +x ./node_modules/.bin
+#             displayName: "Fix permission for node_modules/.bin"
+#             condition: succeeded()
 
-          # Step 4: Run ESLint & Stylelint
-          - script: npm run lint
-            displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: true
+#           # Step 4: Run ESLint & Stylelint
+#           - script: npm run lint
+#             displayName: 'Run Linter (ESLint & Stylelint)'
+#             continueOnError: true
 
-          # Step 5: Prepare SonarQube Analysis
-          - task: SonarQubePrepare@7
-            inputs:
-              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-              scannerMode: "CLI"
-              configMode: "manual"
-              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-              cliProjectName: $(SONARQUBE_PROJECT_NAME)
-              extraProperties: |
-                sonar.sources=.
-                sonar.exclusions=**/node_modules/**,cypress/**
-            displayName: "Prepare SonarQube Analysis Configuration"
+#           # Step 5: Prepare SonarQube Analysis
+#           - task: SonarQubePrepare@7
+#             inputs:
+#               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+#               scannerMode: "CLI"
+#               configMode: "manual"
+#               cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+#               cliProjectName: $(SONARQUBE_PROJECT_NAME)
+#               extraProperties: |
+#                 sonar.sources=.
+#                 sonar.exclusions=**/node_modules/**,cypress/**
+#             displayName: "Prepare SonarQube Analysis Configuration"
 
-          - task: SonarQubeAnalyze@7
-            displayName: "Run SonarQube Analysis"
+#           - task: SonarQubeAnalyze@7
+#             displayName: "Run SonarQube Analysis"
 
-          - task: SonarQubePublish@7
-            displayName: "Publish SonarQube Quality Gate Result"
+#           - task: SonarQubePublish@7
+#             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Step 6: Start Server for Cypress
-          - script: npx http-server -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080)"
-            workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
+#           # Step 6: Start Server for Cypress
+#           - script: npx http-server -p 8080 &
+#             displayName: "Start HTTP Server for Cypress (Port 8080)"
+#             workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
-          # Step 7: Run Cypress Tests
-          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests"
-            env:
-              CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
+#           # Step 7: Run Cypress Tests
+#           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+#             displayName: "Run Cypress E2E Tests"
+#             env:
+#               CYPRESS_BASE_URL: "http://localhost:8080"
+#             continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
 
-          # Step 8: Publish Cypress Test Results
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: "JUnit"
-              testResultsFiles: "**/results/cypress-results-*.xml"
-              mergeTestResults: true
-              failTaskOnFailedTests: true # Ini akan mengagalkan job jika ada tes yang gagal
-            displayName: "Publish Cypress Test Results"
-            condition: succeededOrFailed()
+#           # Step 8: Publish Cypress Test Results
+#           - task: PublishTestResults@2
+#             inputs:
+#               testResultsFormat: "JUnit"
+#               testResultsFiles: "**/results/cypress-results-*.xml"
+#               mergeTestResults: true
+#               failTaskOnFailedTests: true # Ini akan mengagalkan job jika ada tes yang gagal
+#             displayName: "Publish Cypress Test Results"
+#             condition: succeededOrFailed()
 
-  # STAGE 2: Staging - Prepare Artifact
-  - stage: Staging
-    displayName: "2. Staging - Prepare Deploy Artifact"
-    dependsOn: Build_Test_Analyze # Bergantung pada suksesnya stage Build
-    condition: succeeded()
-    jobs:
-      - job: StagingJob
-        displayName: "Create Release Artifact"
-        steps:
-          # Langkah ini penting jika job berjalan pada agen yang berbeda atau konteks baru
-          # untuk mendapatkan akses ke source code yang mungkin dibutuhkan.
-          - checkout: self
-            displayName: "Checkout source code"
+#   # STAGE 2: Staging - Prepare Artifact
+#   - stage: Staging
+#     displayName: "2. Staging - Prepare Deploy Artifact"
+#     dependsOn: Build_Test_Analyze # Bergantung pada suksesnya stage Build
+#     condition: succeeded()
+#     jobs:
+#       - job: StagingJob
+#         displayName: "Create Release Artifact"
+#         steps:
+#           # Langkah ini penting jika job berjalan pada agen yang berbeda atau konteks baru
+#           # untuk mendapatkan akses ke source code yang mungkin dibutuhkan.
+#           - checkout: self
+#             displayName: "Checkout source code"
 
-          # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
-          - task: CopyFiles@2
-            inputs:
-              SourceFolder: "$(Build.SourcesDirectory)"
-              Contents: |
-                index.html
-                style.css
-                script.js
-                img/**
-                sounds/**
-                hammer-hit.png
-                hammer.png
-                README.md
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
-            displayName: "Copy game files to Staging Directory"
+#           # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
+#           - task: CopyFiles@2
+#             inputs:
+#               SourceFolder: "$(Build.SourcesDirectory)"
+#               Contents: |
+#                 index.html
+#                 style.css
+#                 script.js
+#                 img/**
+#                 sounds/**
+#                 hammer-hit.png
+#                 hammer.png
+#                 README.md
+#               TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
+#             displayName: "Copy game files to Staging Directory"
 
-          # Step 10 (dari YAML lama): Publish Build Artifact
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
-              ArtifactName: "HoleAndMoleGameDrop"
-              publishLocation: "Container"
-            displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
+#           # Step 10 (dari YAML lama): Publish Build Artifact
+#           - task: PublishBuildArtifacts@1
+#             inputs:
+#               PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
+#               ArtifactName: "HoleAndMoleGameDrop"
+#               publishLocation: "Container"
+#             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
-  # STAGE 3: Deploy - Deploy to Azure Static Web App
-  - stage: Deploy_Static_Web_App
-    displayName: "3. Deploy - Deploy to Azure Static Web App"
-    dependsOn: Staging # Bergantung pada suksesnya stage Staging
-    condition: succeeded()
-    jobs:
-      - job: DeployJob
-        displayName: "Deploy Game to Azure Static Web App"
-        steps:
-          - task: DownloadBuildArtifacts@0
-            inputs:
-              buildType: current
-              artifactName: HoleAndMoleGameDrop
-              downloadPath: $(System.ArtifactsDirectory)
+#   # STAGE 3: Deploy - Deploy to Azure Static Web App
+#   - stage: Deploy_Static_Web_App
+#     displayName: "3. Deploy - Deploy to Azure Static Web App"
+#     dependsOn: Staging # Bergantung pada suksesnya stage Staging
+#     condition: succeeded()
+#     jobs:
+#       - job: DeployJob
+#         displayName: "Deploy Game to Azure Static Web App"
+#         steps:
+#           - task: DownloadBuildArtifacts@0
+#             inputs:
+#               buildType: current
+#               artifactName: HoleAndMoleGameDrop
+#               downloadPath: $(System.ArtifactsDirectory)
 
-          - task: AzureStaticWebApp@0
-            inputs:
-              app_location: ""
-              api_location: ""
-              output_location: ""
-              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" # Dari variable group Anda
-              skip_app_build: true
-              workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
-            displayName: "🚀 Deploy to Azure Static Web App"
+#           - task: AzureStaticWebApp@0
+#             inputs:
+#               app_location: ""
+#               api_location: ""
+#               output_location: ""
+#               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" # Dari variable group Anda
+#               skip_app_build: true
+#               workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
+#             displayName: "🚀 Deploy to Azure Static Web App"
