@@ -470,12 +470,6 @@ if (resetScoresBtn) {
   resetScoresBtn.addEventListener("click", resetScores);
 }
 
-// Event listener for the reset scores button
-const resetScoresBtn = document.getElementById("reset-scores-btn");
-if (resetScoresBtn) {
-  resetScoresBtn.addEventListener("click", resetScores);
-}
-
 document.addEventListener('mousedown', () => {
   document.body.classList.add('hammer-hit.png');
 });
