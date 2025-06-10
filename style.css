@@ -127,7 +127,7 @@ h1 {
 }
 
 .score-block {
-  /* position: fixed; */
+  position: fixed;
   right: 15px;
   top: 15px;
   background-color: #2f2e2e;
