@@ -174,8 +174,39 @@ Aset penting seperti gambar, suara, dan file source tetap ada di repo (tidak di-
   - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
   - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
   - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
-  
+
 - **eslint.config.mjs**
   - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
   - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
   - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
+
+  package-lock.json
+File ini secara otomatis dibuat oleh npm untuk mengunci semua versi dependency (termasuk subdependency) yang digunakan project. File ini memastikan setiap instalasi dependency akan menghasilkan struktur dependency yang persis sama, sehingga build project tetap konsisten di semua environment.
+Jangan hapus atau edit manual file ini, dan pastikan file ini selalu ikut di-commit ke repository.
+
+- **package.json**
+  - File utama pengelolaan dependency dan script aplikasi.
+  - Berisi daftar library yang dibutuhkan project (seperti ESLint, Stylelint, Cypress) serta script otomatis untuk linting dan testing.
+  - Dengan file ini, developer cukup menjalankan `npm install` untuk men-setup environment, dan `npm run lint` untuk cek kualitas kode.
+
+### 🛠️ Linting (Quality Check)
+
+- **Linting JavaScript:**  
+  - Menggunakan ESLint dengan aturan standar (`js/recommended`) dan dukungan untuk file testing (Mocha, Chai, Cypress).
+  - Memastikan kode JavaScript bebas error sintaks dan konsisten.
+
+- **Linting CSS:**  
+  - Menggunakan Stylelint dengan config standar.
+  - Memastikan seluruh kode CSS rapi, tidak ada typo, dan mengikuti best practice.
+
+- **Linting dijalankan otomatis lewat:**
+  - Perintah `npm run lint`
+  - Pipeline CI/CD sebelum test dan deploy
+### 🛡️ SonarQube Analysis
+
+SonarQube secara otomatis menganalisis seluruh source code aplikasi (kecuali dependency dan file testing Cypress), dengan tujuan:
+- Mendeteksi bug potensial, code smells, dan kerentanan keamanan.
+- Memberikan metrik kualitas kode seperti duplication, complexity, dan maintainability.
+- Pipeline otomatis gagal jika ada issue blocker atau critical, sehingga kode yang masuk selalu dalam kondisi baik.
+- Hasil detail analisis dapat dilihat di dashboard SonarQube (lihat link di Azure DevOps pipeline).
+

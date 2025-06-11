@@ -57,6 +57,7 @@ stages:
               extraProperties: |
                 sonar.sources=.
                 sonar.exclusions=**/node_modules/**,cypress/**
+                sonar.javascript.lcov.reportPaths=coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
           - task: SonarQubeAnalyze@7
@@ -76,6 +77,13 @@ stages:
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
             continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: 'coverage'
+              ArtifactName: 'CodeCoverage'
+              publishLocation: 'Container'
+            displayName: 'Publish Code Coverage Artifact'
 
           # Step 8: Publish Cypress Test Results
           - task: PublishTestResults@2

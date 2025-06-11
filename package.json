@@ -15,12 +15,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@cypress/code-coverage": "^3.14.4",
     "@eslint/js": "^9.27.0",
     "cypress": "^14.4.1",
     "cypress-file-upload": "^5.0.8",
     "eslint": "^9.27.0",
     "globals": "^16.2.0",
     "http-server": "^14.1.1",
+    "istanbul": "^0.4.5",
+    "nyc": "^17.1.0",
     "stylelint": "^16.19.1",
     "stylelint-config-standard": "^38.0.0"
   },
