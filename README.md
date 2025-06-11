@@ -74,3 +74,108 @@ Setiap perubahan kode akan diuji secara otomatis menggunakan Cypress, dengan ske
 - **downloads/**
   - Akan terisi file yang didownload selama pengujian jika test case melakukan download file.
 
+  ### 📁 Struktur Folder (Aset & Dependensi)
+
+- **img/**  
+  Menyimpan aset gambar yang digunakan di game, seperti background, gambar lubang, dan karakter mole.
+
+- **sounds/**  
+  Menyimpan file suara efek (contoh: `punch.mp3`) yang dimainkan ketika user melakukan aksi tertentu, seperti memukul mole.
+
+- **node_modules/**  
+  Berisi semua library dependency aplikasi yang ter-*install* secara otomatis lewat NPM. Folder ini sangat besar dan **tidak pernah dimasukkan ke repository** (sudah ada di .gitignore).
+
+📄 Penjelasan .gitignore
+File .gitignore berfungsi untuk mengatur file/folder apa saja yang diabaikan oleh Git, sehingga tidak akan di-commit atau di-push ke repository.
+Hal ini penting agar repository tetap ringan, rapi, dan hanya berisi source code atau aset penting.
+
+Isi .gitignore pada project ini:
+gitignore
+Salin
+# Cypress artifacts
+cypress/screenshots/
+cypress/videos/
+
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+
+# VSCode settings
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+Penjelasan Setiap Baris:
+cypress/screenshots/, cypress/videos/
+⮞ Mengabaikan screenshot dan video otomatis hasil testing Cypress, karena ukurannya bisa besar dan hanya untuk debugging lokal.
+
+node_modules/
+⮞ Mengabaikan seluruh dependency NPM yang di-install secara otomatis. Folder ini sangat besar dan tidak perlu disimpan di repo (cukup install ulang dengan npm install).
+
+dist/, build/
+⮞ Mengabaikan hasil build/output production, agar repo hanya berisi source code.
+
+.vscode/
+⮞ Setting khusus editor VS Code (personal), tidak penting untuk semua pengguna.
+
+.DS_Store, Thumbs.db
+⮞ File sistem otomatis dari MacOS (DS_Store) dan Windows (Thumbs.db), tidak berkaitan dengan project.
+
+Kenapa File/Folder Ini Di-ignore?
+Agar repo tetap kecil dan ringan.
+
+Dependency, hasil build, dan file sementara tidak perlu disimpan, bisa dibuat ulang kapan saja.
+
+Memudahkan kolaborasi—developer lain cukup clone repo dan jalankan npm install untuk mendapatkan semua dependency.
+
+Aset penting seperti gambar, suara, dan file source tetap ada di repo (tidak di-ignore).
+
+- **.stylelintrc.json**
+  - File konfigurasi Stylelint untuk memastikan seluruh kode CSS mengikuti aturan best practice. Menggunakan standar `stylelint-config-standard` agar style sheet tetap konsisten, bebas error, dan mudah dirawat.
+
+- **azure-pipelines.yml**
+  - File ini mengatur seluruh proses otomatisasi CI/CD project:
+    - Pipeline akan otomatis berjalan setiap ada perubahan di branch utama.
+    - Tahapan yang dilakukan:
+      1. **Install dependency**, linting, dan analisis kualitas kode dengan SonarQube.
+      2. **Testing otomatis** dengan Cypress (end-to-end test).
+      3. **Build dan copy file hasil build** ke artifact.
+      4. **Deploy** artifact ke Azure Static Web App.
+    - Dengan pipeline ini, aplikasi selalu dicek kualitas dan diuji sebelum dideploy otomatis ke server.
+#### 📦 Detail Tahapan Pipeline (`azure-pipelines.yml`)
+
+1. **Build, Test, and Analyze**
+   - Install dependency dengan `npm ci`
+   - Lakukan linting (ESLint & Stylelint)
+   - Analisa kualitas kode dengan SonarQube
+   - Jalankan HTTP server lokal untuk testing
+   - Lakukan E2E testing otomatis (Cypress)
+   - Publish hasil test ke dashboard
+
+2. **Staging (Prepare Artifact)**
+   - Checkout source code
+   - Copy semua file aplikasi ke folder staging
+   - Publish artifact hasil build agar siap di-deploy
+
+3. **Deploy ke Azure Static Web App**
+   - Download artifact hasil build
+   - Deploy aplikasi ke Azure Static Web App secara otomatis
+
+- **cypress.config.js**
+  - File konfigurasi utama Cypress untuk end-to-end testing.
+  - Menggunakan reporter JUnit, sehingga hasil test otomatis dapat di-export dalam format XML dan dibaca oleh pipeline CI/CD (misal Azure DevOps).
+  - Semua hasil test akan tersimpan di folder `results/`, siap untuk dianalisis dan dipantau oleh tim.
+
+- **eslint.config.mjs**
+  - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
+  - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
+  - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
+  
+- **eslint.config.mjs**
+  - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
+  - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
+  - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
