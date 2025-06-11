@@ -1,5 +1,3 @@
-import '@cypress/code-coverage/support';
-
 describe("Mole and Hole Game Functionality", () => {
   const playerName = "Cypress Tester";
   const defaultDuration = "20"; // Sesuai dengan tombol durasi default yang aktif di HTML
