@@ -9,14 +9,6 @@ node_modules/
 dist/
 build/
 
-# Media files
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.mp3
-*.wav
-
 # VSCode settings
 .vscode/
 

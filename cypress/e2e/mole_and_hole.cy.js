@@ -1,6 +1,6 @@
 describe("Mole and Hole Game Functionality", () => {
   const playerName = "Cypress Tester";
-  const defaultDuration = "20"; // Sesuai dengan tombol durasi default yang aktif di HTML Anda
+  const defaultDuration = "20"; // Sesuai dengan tombol durasi default yang aktif di HTML
   const shortDuration = "15";
 
   beforeEach(() => {
@@ -38,7 +38,6 @@ describe("Mole and Hole Game Functionality", () => {
     // Pilih level medium
     cy.get("#medium").click(); //
     cy.get("#medium").should("be.checked"); //
-
     cy.get(".start-btn").click(); //
 
     // Verifikasi UI setelah game dimulai
@@ -152,8 +151,8 @@ describe("Mole and Hole Game Functionality", () => {
 
     // Beri waktu untuk gambar diproses dan diterapkan
     cy.wait(500);
-    // Verifikasi gambar tikus berubah (sulit diverifikasi langsung url background, tapi kita bisa cek console.log dari game Anda)
-    // Untuk verifikasi yang lebih baik, Anda mungkin perlu cara lain atau memodifikasi game untuk mempermudah tes ini.
+    // Verifikasi gambar tikus berubah (sulit diverifikasi langsung url background, tapi kita bisa cek console.log dari game )
+    // Untuk verifikasi yang lebih baik, mungkin perlu cara lain atau memodifikasi game untuk mempermudah tes ini.
     // Di sini kita hanya memastikan tidak ada error.
 
     // Hapus gambar

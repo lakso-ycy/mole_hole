@@ -34,3 +34,43 @@ npm ci
 npm run lint
 npx cypress run
 # (SonarQube bisa dijalankan via pipeline, atau lokal jika punya server SonarQube)
+
+## 📁 Struktur Folder Cypress (Testing)
+
+Berikut penjelasan file dan folder penting di dalam `cypress/`:
+
+- **e2e/**
+  - Berisi seluruh skenario end-to-end test.
+  - `mole_and_hole.cy.js`: Test utama aplikasi, menguji fitur-fitur seperti mulai game, ganti gambar mole, skor, reset skor, dsb.
+  ### 📄 Penjelasan Test Case Cypress
+Setiap perubahan kode akan diuji secara otomatis menggunakan Cypress, dengan skenario sebagai berikut:
+
+    - **Initial Load**: Mengecek apakah seluruh elemen penting (judul, input, tombol, skor) muncul dengan benar saat halaman dibuka.
+    - **Validasi Nama Kosong**: Pastikan user tidak bisa memulai permainan tanpa mengisi nama, dan pesan error tampil.
+    - **Pengaturan Game**: Test input nama, pilihan durasi & level, lalu memulai game dan memverifikasi perubahan UI.
+    - **Skor Bertambah**: Simulasi klik pada mole dan pastikan skor bertambah.
+    - **Akhir Permainan & High Score**: Setelah waktu habis, skor akhir dan high score diperbarui.
+    - **Cancel Game**: Fitur membatalkan game berjalan dan memunculkan pesan pembatalan.
+    - **Ganti/Hapus Gambar Mole**: Test upload & hapus gambar mole, serta pesan sukses.
+    - **Reset High Score**: Test tombol reset skor dan pastikan high score kembali ke awal.
+    - **Tampilan Tombol**: Mengecek label dan tampilan tombol Start serta Reset Score.
+
+    Semua skenario di atas berjalan otomatis di pipeline untuk memastikan aplikasi selalu dalam kondisi baik.
+
+- **fixtures/**
+  - Menyimpan data statis/mock yang digunakan untuk pengujian otomatis.
+  - `test-mole.png`: Gambar dummy untuk testing upload.
+  - `users.json`, `profile.json`: Data user mock untuk pengujian.
+
+- **screenshots/**
+  - Otomatis terisi screenshot ketika ada test yang gagal, memudahkan debugging.
+
+- **support/**
+  - **cypress/support/commands.js**
+    - Digunakan untuk menulis custom command Cypress (saat ini masih kosong).
+  - **cypress/support/e2e.js**
+    - File konfigurasi global untuk Cypress. Di sini, seluruh custom command diimpor dan plugin `cypress-file-upload` diaktifkan untuk mendukung fitur upload file saat testing.
+
+- **downloads/**
+  - Akan terisi file yang didownload selama pengujian jika test case melakukan download file.
+
