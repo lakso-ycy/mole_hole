@@ -89,9 +89,8 @@ stages:
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
           # Step 9: Jalankan Cypress test dari folder instrumented/
-          - script: npx cypress run --spec "/cypress/e2e/mole_and_hole.cy.js"
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests (on instrumented/)"
-            # workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
             continueOnError: false
