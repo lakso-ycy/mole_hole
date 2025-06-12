@@ -8,7 +8,7 @@ describe("Mole and Hole Game Functionality", () => {
   });
 
   it("should load the game page with initial elements visible", () => {
-    cy.get("h1").should("contain.text", "Gepuk Curut"); //
+    cy.get("h1").should("contain.text", "GACORRR!!!"); //
     cy.get(".start-btn").invoke("text").should("include", "Start");
     cy.get("#player-name").should("be.visible"); //
     cy.get(".start-btn").should("be.visible"); //
