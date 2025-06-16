@@ -19,33 +19,27 @@ variables:
     value: "mole and hole"
 
 stages:
-  # STAGE 1: Build, Test, and Analyze
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
-          # Step 1: Install Node.js
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
             displayName: "Install Node.js $(nodeVersion)"
 
-          # Step 2: Install Dependencies
           - script: npm ci
             displayName: "Clean install project dependencies (npm ci)"
 
-          # Step 3: Run ESLint & Stylelint
           - script: npm run lint
             displayName: "Run Linter (ESLint & Stylelint)"
             continueOnError: false
 
-          # Step 4: Instrumentasi kode untuk coverage
           - script: npx nyc instrument . ./instrumented
             displayName: "Instrument source code for coverage"
 
-          # Step 4: Copy semua asset pendukung ke instrumented/
           - script: |
               cp index.html instrumented/
               cp style.css instrumented/
@@ -55,24 +49,25 @@ stages:
               cp README.md instrumented/
             displayName: "Copy all supporting assets to instrumented/"
 
-          # Step 5: Fix Permissions (Prevent Permission Denied)
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
-            condition: succeeded()
 
-          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
+          # Start HTTP Server
           - script: npx http-server -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
+            displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          # Step 9: Jalankan Cypress test dari folder instrumented/
-          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests (on instrumented/)"
+          - script: npx wait-on http://localhost:8080
+            displayName: "Wait for HTTP server before running Cypress"
+
+          # Run Cypress from root, with correct spec path
+          - script: npx cypress run --spec "instrumented/cypress/e2e/mole_and_hole.cy.js" --browser chrome --headless
+            displayName: "Run Cypress E2E Tests (instrumented spec)"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
             continueOnError: false
 
-            # Step 7: Prepare SonarQube Analysis
+          # SonarQube Analysis
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -92,7 +87,7 @@ stages:
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Step 10: Publish code coverage artifact
+          # Publish coverage report
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: "coverage"
@@ -100,17 +95,25 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Code Coverage Artifact"
 
-          # Step 11: Publish Cypress Test Results
+          # Publish test results
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
-              testResultsFiles: "/results/cypress-results-*.xml"
+              testResultsFiles: "**/results/*.xml"
               mergeTestResults: true
               failTaskOnFailedTests: true
-            displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed()
+            displayName: "Publish Cypress Test Results"
 
-  # STAGE 2: Staging - Prepare Artifact
+          # Publish Cypress screenshots for failed tests
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "cypress/screenshots"
+              ArtifactName: "CypressScreenshots"
+              publishLocation: "Container"
+            condition: always()
+            displayName: "Publish Cypress Screenshots"
+
   - stage: Staging
     displayName: "2. Staging - Prepare Deploy Artifact"
     dependsOn: Build_Test_Analyze
@@ -122,7 +125,6 @@ stages:
           - checkout: self
             displayName: "Checkout source code"
 
-          # Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)"
@@ -145,7 +147,6 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
-  # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
     displayName: "3. Deploy - Deploy to Azure Static Web App"
     dependsOn: Staging
