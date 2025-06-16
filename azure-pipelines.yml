@@ -42,8 +42,11 @@ stages:
 
           - script: |
               cp index.html instrumented/
+              cp script.js instrumented/
               cp style.css instrumented/
               cp package.json instrumented/
+              cp img/hammer.png instrumented/
+              cp img/hammer-hit.png instrumented/
               cp -r img instrumented/
               cp -r sounds instrumented/
               cp README.md instrumented/
@@ -52,7 +55,6 @@ stages:
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
 
-          # Start HTTP Server
           - script: npx http-server -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
@@ -60,14 +62,13 @@ stages:
           - script: npx wait-on http://localhost:8080
             displayName: "Wait for HTTP server before running Cypress"
 
-          # Run Cypress from root, with correct spec path
-          - script: npx cypress run --browser chrome --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests (instrumented spec)"
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests (on instrumented/)"
+            workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
             continueOnError: false
 
-          # SonarQube Analysis
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -87,7 +88,6 @@ stages:
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Publish coverage report
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: "coverage"
@@ -95,7 +95,6 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Code Coverage Artifact"
 
-          # Publish test results
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
@@ -105,10 +104,9 @@ stages:
             condition: succeededOrFailed()
             displayName: "Publish Cypress Test Results"
 
-          # Publish Cypress screenshots for failed tests
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: "cypress/screenshots"
+              PathtoPublish: "$(System.DefaultWorkingDirectory)/instrumented/cypress/screenshots"
               ArtifactName: "CypressScreenshots"
               publishLocation: "Container"
             condition: always()
@@ -132,10 +130,10 @@ stages:
                 index.html
                 style.css
                 script.js
-                img/**
-                sounds/**
                 hammer-hit.png
                 hammer.png
+                img/**
+                sounds/**
                 README.md
               TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
             displayName: "Copy game files to Staging Directory"
