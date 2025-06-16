@@ -471,11 +471,11 @@ if (resetScoresBtn) {
 }
 
 document.addEventListener('mousedown', () => {
-  document.body.classList.add('hammer-hit.png');
+  document.body.classList.add('img/hammer-hit.png');
 });
 
 document.addEventListener('mouseup', () => {
   setTimeout(() => {
-    document.body.classList.remove('hammer-hit.png');
+    document.body.classList.remove('img/hammer-hit.png');
   }, 50); // ganti kecepatan animasi (ms) jika mau
 });

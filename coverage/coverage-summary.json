@@ -1,3 +1,2 @@
-{"total": {"lines":{"total":229,"covered":185,"skipped":0,"pct":80.78},"statements":{"total":256,"covered":205,"skipped":0,"pct":80.07},"functions":{"total":38,"covered":35,"skipped":0,"pct":92.1},"branches":{"total":155,"covered":76,"skipped":0,"pct":49.03},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
-,"C:\\Kuliah\\SEMESTER 6\\PSO\\fp-pso-fleksibel\\script.js": {"lines":{"total":229,"covered":185,"skipped":0,"pct":80.78},"functions":{"total":38,"covered":35,"skipped":0,"pct":92.1},"statements":{"total":256,"covered":205,"skipped":0,"pct":80.07},"branches":{"total":155,"covered":76,"skipped":0,"pct":49.03}}
+{"total": {"lines":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"},"statements":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"},"functions":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"},"branches":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
 }

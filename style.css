@@ -7,7 +7,7 @@
 /* Cursoraa default: palu biasa */
 html,
 body {
-  cursor: url('hammer.png'), auto;
+  cursor: url('img/hammer.png'), auto;
 }
 
 body {
@@ -27,7 +27,7 @@ body {
 
 /* Saat diklik: palu mukul */
 body.hammer-hit {
-  cursor: url('hammer-hit.png'), auto;
+  cursor: url('img/hammer-hit.png'), auto;
 }
 
 .container {
@@ -419,7 +419,7 @@ h1 {
   background: url("img/mole.png") bottom center no-repeat;
   background-size: 60%;
   transition: top 0.4s;
-  cursor: url('hammer.png'), pointer;
+  cursor: url('img/hammer.png'), pointer;
   z-index: 2;
 }
 
