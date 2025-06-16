@@ -61,7 +61,7 @@ stages:
             displayName: "Wait for HTTP server before running Cypress"
 
           # Run Cypress from root, with correct spec path
-          - script: npx cypress run --spec "/cypress/e2e/mole_and_hole.cy.js" --browser chrome --headless
+          - script: npx cypress run --spec "cobalcypress/e2e/mole_and_hole.cy.js" --browser chrome --headless
             displayName: "Run Cypress E2E Tests (instrumented spec)"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
