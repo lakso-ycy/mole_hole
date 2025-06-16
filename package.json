@@ -1,14 +1,25 @@
 {
   "name": "fp-pso-fleksibel",
   "version": "1.0.0",
-  "description": "this is a simple mole and hole a web based game built using html css js. <br/>\r where you have to catch the mole, whenever you click on mole you will get points.",
-  "main": "script.js",
+  "description": "A simple Mole and Hole game built with HTML, CSS, and JS.",
+  "main": "instrumented/script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint . --ext .js --ignore-pattern coverage && stylelint \"**/*.css\" \"!coverage/**/*.css\" --ignore-path .gitignore",
     "pretest": "nyc instrument ./ ./instrumented",
-    "cypress:open": "npx cypress open",
-    "cypress:run": "npx cypress run"
+    "serve": "http-server . -p 8080",
+    "test": "cypress run --browser chrome",
+    "coverage": "nyc report --reporter=html && nyc report --reporter=text && nyc report --reporter=lcov",
+    "lint": "eslint . --ext .js --ignore-pattern coverage && stylelint \"**/*.css\" \"!coverage/**/*.css\" --ignore-path .gitignore",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run --browser chrome",
+    "full": "npm run pretest && start cmd /k \"npm run serve\" && npm run test && npm run coverage"
+  },
+  "nyc": {
+    "report-dir": "./coverage",
+    "temp-dir": "./.nyc_output",
+    "reporter": ["text", "html", "lcov"],
+    "all": true,
+    "include": [" script.js"],
+    "exclude": ["cypress/**", "node_modules/**", "instrumented/**/!(*.js)"]
   },
   "repository": {
     "type": "git",
@@ -25,12 +36,9 @@
     "eslint": "^9.27.0",
     "globals": "^16.2.0",
     "http-server": "^14.1.1",
-    "istanbul": "^0.4.5",
     "nyc": "^17.1.0",
     "stylelint": "^16.19.1",
     "stylelint-config-standard": "^38.0.0"
   },
-  "dependencies": {
-    "fp-pso-fleksibel": "file:"
-  }
+  "dependencies": {}
 }

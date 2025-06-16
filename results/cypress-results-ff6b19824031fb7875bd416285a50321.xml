@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="49.823" tests="10" failures="0">
+  <testsuite name="Root Suite" timestamp="2025-06-16T09:58:31" tests="0" file="cypress\e2e\mole_and_hole.cy.js" time="0.000" failures="0">
+  </testsuite>
+  <testsuite name="Mole and Hole Game Functionality" timestamp="2025-06-16T09:58:32" tests="9" time="0.000" failures="0">
+    <testcase name="Mole and Hole Game Functionality should load the game page with initial elements visible" time="2.210" classname="should load the game page with initial elements visible">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should not start game if player name is empty and show message" time="0.627" classname="should not start game if player name is empty and show message">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should allow typing player name, select duration, select level, and start the game" time="0.993" classname="should allow typing player name, select duration, select level, and start the game">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should increase score when a mole is hit" time="3.643" classname="should increase score when a mole is hit">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should end the game when time is up and update high score" time="20.828" classname="should end the game when time is up and update high score">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should allow cancelling the game" time="2.159" classname="should allow cancelling the game">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should change mole image on upload and remove image" time="0.811" classname="should change mole image on upload and remove image">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should reset high scores" time="17.027" classname="should reset high scores">
+    </testcase>
+    <testcase name="Mole and Hole Game Functionality should have correct label on Reset Score button" time="0.100" classname="should have correct label on Reset Score button">
+    </testcase>
+  </testsuite>
+  <testsuite name="Game test" timestamp="2025-06-16T09:59:20" tests="1" time="0.725" failures="0">
+    <testcase name="Mole and Hole Game Functionality Game test should show Start button" time="0.510" classname="should show Start button">
+    </testcase>
+  </testsuite>
+</testsuites>
