@@ -36,46 +36,42 @@ stages:
           - script: npm ci
             displayName: "Clean install project dependencies (npm ci)"
 
-          # Step 3: Instrumentasi kode untuk coverage
-          - script: npx nyc instrument ./ ./instrumented
-            displayName: "Instrument source code for coverage"
+          # Step 3: Fix Permissions
+          - script: chmod -R +x ./node_modules/.bin
+            displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
 
-          # Step 4: Copy semua asset pendukung ke instrumented/
+          # Step 4: Run Linter
+          - script: npm run lint
+            displayName: "Run Linter (ESLint & Stylelint)"
+            continueOnError: false
+
+          # Step 5 (DIPERBAIKI): Siapkan folder instrumented/ secara eksplisit
           - script: |
+              mkdir -p instrumented
+              npx nyc instrument ./script.js instrumented/script.js
               cp index.html instrumented/
               cp style.css instrumented/
-              cp script.js instrumented/
               cp package.json instrumented/
               cp -r img instrumented/
               cp -r sounds instrumented/
               cp hammer-hit.png instrumented/
               cp hammer.png instrumented/
               cp README.md instrumented/
-            displayName: "Copy all supporting assets to instrumented/"
+            displayName: "Prepare 'instrumented' directory for testing"
 
-          # Step 5: Fix Permissions (Prevent Permission Denied)
-          - script: chmod -R +x ./node_modules/.bin
-            displayName: "Fix permission for node_modules/.bin"
-            condition: succeeded()
-
-          # Step 6: Run ESLint & Stylelint
-          - script: npm run lint
-            displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: false
-
-          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
+          # Step 6: Jalankan Server dan Tes Cypress (Ini akan membuat folder 'coverage/')
           - script: npx http-server -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          # Step 9: Jalankan Cypress test dari folder instrumented/
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests (on instrumented/)"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
             continueOnError: false
 
-            # Step 7: Prepare SonarQube Analysis
+          # Step 7 (POSISI DIPERBAIKI): Jalankan SonarQube SETELAH tes selesai
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -85,7 +81,7 @@ stages:
               cliProjectName: $(SONARQUBE_PROJECT_NAME)
               extraProperties: |
                 sonar.sources=.
-                sonar.exclusions=**/node_modules/**,cypress/**
+                sonar.exclusions=**/node_modules/**,cypress/**,instrumented/**
                 sonar.javascript.lcov.reportPaths=coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
@@ -95,15 +91,7 @@ stages:
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Step 10: Publish code coverage artifact
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: 'coverage'
-              ArtifactName: 'CodeCoverage'
-              publishLocation: 'Container'
-            displayName: 'Publish Code Coverage Artifact'
-
-          # Step 11: Publish Cypress Test Results
+          # Step 8: Publish Artifacts (Test Results & Coverage)
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
@@ -112,6 +100,13 @@ stages:
               failTaskOnFailedTests: true
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed()
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: "coverage"
+              ArtifactName: "CodeCoverage"
+              publishLocation: "Container"
+            displayName: "Publish Code Coverage Artifact"
 
   # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
