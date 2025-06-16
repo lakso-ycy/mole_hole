@@ -18,6 +18,7 @@ Thumbs.db
 
 # Coverage
 coverage/
+# results/
 .nyc_output/
 
 /instrumented/
