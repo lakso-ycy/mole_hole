@@ -67,7 +67,7 @@ stages:
           - script: npx wait-on http://localhost:8080
             displayName: "⌛ Wait until HTTP server is ready"
 
-          - script: npx cypress run --browser chrome --spec "cypress/e2e/mole_and_hole.cy.js"
+          - script: npx cypress run --browser chrome --spec "cypress/e2e/mole_and_hole.cy.js" --config baseUrl=http://localhost:8080
             displayName: "🚀 Run Cypress E2E Tests"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
