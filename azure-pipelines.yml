@@ -43,6 +43,7 @@ stages:
           - script: |
               cp index.html instrumented/
               cp script.js instrumented/
+              cp instrumented/script.js instrumented/
               cp style.css instrumented/
               cp package.json instrumented/
               cp -r cypress instrumented/
