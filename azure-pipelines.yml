@@ -24,7 +24,13 @@ stages:
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
+        timeoutInMinutes: 20
         steps:
+          # Fix Cypress terminal issue
+          - bash: |
+              echo "##vso[task.setvariable variable=TERM]xterm"
+            displayName: "Set TERM env for Cypress"
+
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
