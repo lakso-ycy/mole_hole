@@ -45,6 +45,7 @@ stages:
               cp script.js instrumented/
               cp style.css instrumented/
               cp package.json instrumented/
+              cp -r cypress instrumented/
               cp cypress.config.js instrumented/
               cp img/hammer.png instrumented/
               cp img/hammer-hit.png instrumented/
