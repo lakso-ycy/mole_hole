@@ -19,29 +19,33 @@ variables:
     value: "mole and hole"
 
 stages:
+  # STAGE 1: Build, Test, and Analyze
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
-        timeoutInMinutes: 20
         steps:
-          # Fix Cypress terminal issue
-          - bash: |
-              echo "##vso[task.setvariable variable=TERM]xterm"
-            displayName: "Set TERM env for Cypress"
-
+          # Step 1: Install Node.js
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
             displayName: "Install Node.js $(nodeVersion)"
 
+          # Step 2: Install Dependencies
           - script: npm ci
-            displayName: "Clean install project dependencies"
+            displayName: "Clean install project dependencies (npm ci)"
 
-          - script: npx nyc instrument ./ ./instrumented
+          # Step 3: Run ESLint & Stylelint
+          - script: npm run lint
+            displayName: "Run Linter (ESLint & Stylelint)"
+            continueOnError: false
+
+          # Step 4: Instrumentasi kode untuk coverage
+          - script: npx nyc instrument . ./instrumented
             displayName: "Instrument source code for coverage"
 
+          # Step 4: Copy semua asset pendukung ke instrumented/
           - script: |
               cp index.html instrumented/
               cp style.css instrumented/
@@ -51,30 +55,24 @@ stages:
               cp README.md instrumented/
             displayName: "Copy all supporting assets to instrumented/"
 
-          - script: |
-              sed -i 's|script.js|instrumented/script.js|g' instrumented/index.html
-            displayName: "🔧 Patch index.html to use instrumented/script.js"
-
+          # Step 5: Fix Permissions (Prevent Permission Denied)
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
 
-          - script: npm run lint
-            displayName: "Run Linter (ESLint & Stylelint)"
+          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
+            workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          - script: npx http-server ./instrumented -p 8080 &
-            displayName: "🌐 Start HTTP Server on port 8080"
-
-          - script: npx wait-on http://localhost:8080
-            displayName: "⌛ Wait until HTTP server is ready"
-
-          - script: npx cypress run --browser chrome --spec "cypress/e2e/mole_and_hole.cy.js" --config baseUrl=http://localhost:8080
-            displayName: "🚀 Run Cypress E2E Tests"
+          # Step 9: Jalankan Cypress test dari folder instrumented/
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests (on instrumented/)"
             env:
-              CYPRESS_BASE_URL: "http://localhost:8080"
+              CYPRESS_BASE_URL: "http://192.168.56.1:8080"
+            continueOnError: false
 
-          - script: npx nyc report --reporter=html --reporter=text --reporter=lcov
-            displayName: "📊 Generate NYC Coverage Report"
-
+            # Step 7: Prepare SonarQube Analysis
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -84,9 +82,9 @@ stages:
               cliProjectName: $(SONARQUBE_PROJECT_NAME)
               extraProperties: |
                 sonar.sources=.
-                sonar.exclusions=**/node_modules/**,cypress/**
+                sonar.exclusions=/node_modules/,cypress/**
                 sonar.javascript.lcov.reportPaths=coverage/lcov.info
-            displayName: "🔍 Prepare SonarQube Analysis Configuration"
+            displayName: "Prepare SonarQube Analysis Configuration"
 
           - task: SonarQubeAnalyze@7
             displayName: "Run SonarQube Analysis"
@@ -94,22 +92,25 @@ stages:
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
+          # Step 10: Publish code coverage artifact
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: 'coverage'
-              ArtifactName: 'CodeCoverage'
-              publishLocation: 'Container'
-            displayName: '⬆️ Publish Code Coverage Artifact'
+              PathtoPublish: "coverage"
+              ArtifactName: "CodeCoverage"
+              publishLocation: "Container"
+            displayName: "Publish Code Coverage Artifact"
 
+          # Step 11: Publish Cypress Test Results
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
-              testResultsFiles: "**/results/cypress-results-*.xml"
+              testResultsFiles: "/results/cypress-results-*.xml"
               mergeTestResults: true
               failTaskOnFailedTests: true
-            displayName: "🧪 Publish Cypress Test Results"
+            displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed()
 
+  # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
     displayName: "2. Staging - Prepare Deploy Artifact"
     dependsOn: Build_Test_Analyze
@@ -121,6 +122,7 @@ stages:
           - checkout: self
             displayName: "Checkout source code"
 
+          # Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)"
@@ -143,6 +145,7 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
+  # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
     displayName: "3. Deploy - Deploy to Azure Static Web App"
     dependsOn: Staging
