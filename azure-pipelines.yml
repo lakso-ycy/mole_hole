@@ -63,7 +63,19 @@ stages:
             displayName: 'Run Linter (ESLint & Stylelint)'
             continueOnError: false
 
-          # Step 7: Prepare SonarQube Analysis
+          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
+            workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
+
+          # Step 9: Jalankan Cypress test dari folder instrumented/
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests (on instrumented/)"
+            env:
+              CYPRESS_BASE_URL: "http://localhost:8080"
+            continueOnError: false
+
+            # Step 7: Prepare SonarQube Analysis
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -82,18 +94,6 @@ stages:
 
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
-
-          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
-          - script: npx http-server -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
-            workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
-
-          # Step 9: Jalankan Cypress test dari folder instrumented/
-          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests (on instrumented/)"
-            env:
-              CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: false
 
           # Step 10: Publish code coverage artifact
           - task: PublishBuildArtifacts@1
