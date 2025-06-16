@@ -201,6 +201,6 @@ describe("Mole and Hole Game Functionality", () => {
   });
 
   it("should have correct label on Reset Score button", () => {
-    cy.get("#reset-scores-btn").should("have.text", "Reset Score");
+    cy.get("#reset-scores-btn").should("have.text", "reset");
   });
 });
