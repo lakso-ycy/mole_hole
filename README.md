@@ -1,7 +1,25 @@
 # mole-and-hole-game
 
-this is a simple mole and hole a web based game built using html css js. <br/>
-where you have to catch the mole, whenever you click on mole you will get points.
+Hole and Mole adalah permainan web sederhana yang terinspirasi dari game klasik "Whack-a-Mole", sebuah permainan arkade populer di mana pemain harus memukul boneka tikus tanah (mole) yang muncul secara acak dari lubang-lubang sebelum mereka menghilang kembali
+
+# TUJUAN
+
+Menerapkan CI/CD pipeline untuk game Hole and Mole menggunakan Azure Devops (otomasi build dan testing) dan Azure Static Web Apps (deployment) dengan kriteria:
+  - Build otomatis di-trigger oleh commit ke branch main,
+  - Testing otomatis dengan Cypress dan lint (coverage ≥80%),
+  - Deployment tanpa downtime ke lingkungan produksi,
+
+# PENAMBAHAN FITUR
+
+semua penambahan fitur kita implementasikan *CRUD*
+  - Kursor diubah menjadi gambar palu
+  - Fitur Upload Gambar untuk target (tikus) menjadi sesuai apa yg user input
+  - Fitur Highscore
+  - Create Username
+  - Reset score
+  - Fitur Sound Effect
+  - Fitur Durasi Permainan
+
 
 ### Let's chase your friend in the game. LINK ASLI
 https://dhruv35m.github.io/hole-and-mole-game/
@@ -27,186 +45,82 @@ Pipeline proyek ini secara otomatis menjalankan beberapa tahap pengujian dan ana
 - **Build & Deploy Test**  
   Proses build dan deployment diuji otomatis di pipeline.
 
-### 💻 Menjalankan Testing Secara Lokal
+## 🚀 CI/CD Pipeline Flow
+Berikut rangkuman proses pipeline yang berjalan setiap ada commit atau pull request ke branch main, mengikuti urutan step di pipeline YAML:
 
-```bash
-npm ci
-npm run lint
-npx cypress run
-# (SonarQube bisa dijalankan via pipeline, atau lokal jika punya server SonarQube)
+**1. Install Node.js**
+Menginstall Node.js versi yang sudah ditentukan (misal: 20.x) ke dalam environment pipeline, agar sesuai dengan versi pengembangan project.
 
-## 📁 Struktur Folder Cypress (Testing)
+**2. Install Dependencies**
+Menggunakan perintah npm ci untuk menginstall semua dependency dari package-lock.json secara cepat dan konsisten.
 
-Berikut penjelasan file dan folder penting di dalam `cypress/`:
+**3. Fix File Permissions**
+Memastikan semua file binary di node_modules/.bin dapat dieksekusi di environment Ubuntu/Linux (chmod +x).
 
-- **e2e/**
-  - Berisi seluruh skenario end-to-end test.
-  - `mole_and_hole.cy.js`: Test utama aplikasi, menguji fitur-fitur seperti mulai game, ganti gambar mole, skor, reset skor, dsb.
-  ### 📄 Penjelasan Test Case Cypress
-Setiap perubahan kode akan diuji secara otomatis menggunakan Cypress, dengan skenario sebagai berikut:
+**4. Linting (ESLint & Stylelint)**
+Menjalankan npm run lint untuk melakukan pemeriksaan kualitas kode JavaScript dan CSS.
+Build akan gagal jika ada error linting.
 
-    - **Initial Load**: Mengecek apakah seluruh elemen penting (judul, input, tombol, skor) muncul dengan benar saat halaman dibuka.
-    - **Validasi Nama Kosong**: Pastikan user tidak bisa memulai permainan tanpa mengisi nama, dan pesan error tampil.
-    - **Pengaturan Game**: Test input nama, pilihan durasi & level, lalu memulai game dan memverifikasi perubahan UI.
-    - **Skor Bertambah**: Simulasi klik pada mole dan pastikan skor bertambah.
-    - **Akhir Permainan & High Score**: Setelah waktu habis, skor akhir dan high score diperbarui.
-    - **Cancel Game**: Fitur membatalkan game berjalan dan memunculkan pesan pembatalan.
-    - **Ganti/Hapus Gambar Mole**: Test upload & hapus gambar mole, serta pesan sukses.
-    - **Reset High Score**: Test tombol reset skor dan pastikan high score kembali ke awal.
-    - **Tampilan Tombol**: Mengecek label dan tampilan tombol Start serta Reset Score.
+**5. Instrumentasi & Penyalinan File**
+Menjalankan proses instrumentasi dengan nyc, lalu menyalin file penting ke folder instrumented untuk pengujian dan pelaporan coverage.
 
-    Semua skenario di atas berjalan otomatis di pipeline untuk memastikan aplikasi selalu dalam kondisi baik.
+**6. Debug Folder Instrumented**
+Mengecek isi folder instrumented untuk memastikan file sudah ter-copy dengan benar.
 
-- **fixtures/**
-  - Menyimpan data statis/mock yang digunakan untuk pengujian otomatis.
-  - `test-mole.png`: Gambar dummy untuk testing upload.
-  - `users.json`, `profile.json`: Data user mock untuk pengujian.
+**7. Start HTTP Server**
+Menjalankan server lokal (http-server) pada port 8080 agar aplikasi bisa diakses untuk keperluan pengujian E2E (End-to-End).
 
-- **screenshots/**
-  - Otomatis terisi screenshot ketika ada test yang gagal, memudahkan debugging.
+**8. Jalankan Cypress E2E Tests**
+Menjalankan Cypress untuk menguji fitur aplikasi secara end-to-end secara otomatis di browser.
+Semua fitur utama diuji agar tidak ada bug sebelum dideploy.
 
-- **support/**
-  - **cypress/support/commands.js**
-    - Digunakan untuk menulis custom command Cypress (saat ini masih kosong).
-  - **cypress/support/e2e.js**
-    - File konfigurasi global untuk Cypress. Di sini, seluruh custom command diimpor dan plugin `cypress-file-upload` diaktifkan untuk mendukung fitur upload file saat testing.
+**9. Debug Coverage**
+Memastikan folder coverage dan file lcov.info sudah terbentuk setelah pengujian.
 
-- **downloads/**
-  - Akan terisi file yang didownload selama pengujian jika test case melakukan download file.
+**10. Publish Cypress Test Results**
+Mengupload hasil tes otomatis Cypress (format JUnit XML) ke dashboard Azure DevOps agar tim bisa memantau hasil pengujian.
 
-  ### 📁 Struktur Folder (Aset & Dependensi)
+**11. Prepare SonarQube Analysis**
+Menyiapkan konfigurasi untuk analisis kualitas kode menggunakan SonarQube (termasuk include/exclude path & coverage report).
 
-- **img/**  
-  Menyimpan aset gambar yang digunakan di game, seperti background, gambar lubang, dan karakter mole.
+**12. Jalankan SonarQube Analysis**
+Melakukan proses analisis kode secara otomatis menggunakan SonarQube untuk mendeteksi bug, code smell, duplikasi, dan masalah keamanan.
 
-- **sounds/**  
-  Menyimpan file suara efek (contoh: `punch.mp3`) yang dimainkan ketika user melakukan aksi tertentu, seperti memukul mole.
+**13. Publish SonarQube Quality Gate Result**
+Mengirim hasil analisis ke dashboard SonarQube dan memastikan build fail jika Quality Gate tidak lolos.
 
-- **node_modules/**  
-  Berisi semua library dependency aplikasi yang ter-*install* secara otomatis lewat NPM. Folder ini sangat besar dan **tidak pernah dimasukkan ke repository** (sudah ada di .gitignore).
+**14. Staging - Prepare Deploy Artifact**
+Semua source code, aset, dan hasil build disalin ke folder staging ($(Build.ArtifactStagingDirectory)/game-files) lalu dipublish sebagai artifact build.
 
-📄 Penjelasan .gitignore
-File .gitignore berfungsi untuk mengatur file/folder apa saja yang diabaikan oleh Git, sehingga tidak akan di-commit atau di-push ke repository.
-Hal ini penting agar repository tetap ringan, rapi, dan hanya berisi source code atau aset penting.
+**15. Publish Build Artifact**
+Artifact hasil build (game-files) dipublish sebagai artifact pipeline yang siap dideploy ke production.
 
-Isi .gitignore pada project ini:
-gitignore
-Salin
-# Cypress artifacts
-cypress/screenshots/
-cypress/videos/
+**16. Download Build Artifact**
+Mengambil artifact hasil build dari stage sebelumnya untuk diproses lebih lanjut.
 
-# Node modules
-node_modules/
+**17. Deploy to Azure Static Web App**
+Artifact hasil build di-deploy otomatis ke Azure Static Web App.
+Website akan selalu up-to-date setiap ada perubahan kode di branch utama.
 
-# Build output
-dist/
-build/
 
-# VSCode settings
-.vscode/
+# ERROR YANG TEMUKAN DAN SOLUSI
 
-# System files
-.DS_Store
-Thumbs.db
-Penjelasan Setiap Baris:
-cypress/screenshots/, cypress/videos/
-⮞ Mengabaikan screenshot dan video otomatis hasil testing Cypress, karena ukurannya bisa besar dan hanya untuk debugging lokal.
+*NPM Tidak Dikenali di PowerShell*
+  - Masalah: 'npm' is not recognized...
+  - Solusi: Install Node.js + update PATH + set execution policy PowerShell.
 
-node_modules/
-⮞ Mengabaikan seluruh dependency NPM yang di-install secara otomatis. Folder ini sangat besar dan tidak perlu disimpan di repo (cukup install ulang dengan npm install).
+*Linting JavaScript & CSS*
+  - Masalah: Parsing error, variabel tidak dikenal, gaya penulisan salah.
+  - Solusi: Gunakan npx, fokus lint .js saja, perbaiki struktur CSS dan nama keyframes.
 
-dist/, build/
-⮞ Mengabaikan hasil build/output production, agar repo hanya berisi source code.
+*Error Testing Cypress*
+  - Masalah: Spec tidak ditemukan, base URL gagal konek, error hanya di pipeline.
+  - Solusi: Jalankan server http-server, pastikan Cypress di-root, gunakan port 8080.
 
-.vscode/
-⮞ Setting khusus editor VS Code (personal), tidak penting untuk semua pengguna.
+*Coverage SonarQube 0%*
+  - Masalah: Report coverage tidak terbaca.
+  - Solusi: Jalankan Cypress sebelum Sonar, gunakan folder instrumented/, ignore folder di linting.
 
-.DS_Store, Thumbs.db
-⮞ File sistem otomatis dari MacOS (DS_Store) dan Windows (Thumbs.db), tidak berkaitan dengan project.
-
-Kenapa File/Folder Ini Di-ignore?
-Agar repo tetap kecil dan ringan.
-
-Dependency, hasil build, dan file sementara tidak perlu disimpan, bisa dibuat ulang kapan saja.
-
-Memudahkan kolaborasi—developer lain cukup clone repo dan jalankan npm install untuk mendapatkan semua dependency.
-
-Aset penting seperti gambar, suara, dan file source tetap ada di repo (tidak di-ignore).
-
-- **.stylelintrc.json**
-  - File konfigurasi Stylelint untuk memastikan seluruh kode CSS mengikuti aturan best practice. Menggunakan standar `stylelint-config-standard` agar style sheet tetap konsisten, bebas error, dan mudah dirawat.
-
-- **azure-pipelines.yml**
-  - File ini mengatur seluruh proses otomatisasi CI/CD project:
-    - Pipeline akan otomatis berjalan setiap ada perubahan di branch utama.
-    - Tahapan yang dilakukan:
-      1. **Install dependency**, linting, dan analisis kualitas kode dengan SonarQube.
-      2. **Testing otomatis** dengan Cypress (end-to-end test).
-      3. **Build dan copy file hasil build** ke artifact.
-      4. **Deploy** artifact ke Azure Static Web App.
-    - Dengan pipeline ini, aplikasi selalu dicek kualitas dan diuji sebelum dideploy otomatis ke server.
-#### 📦 Detail Tahapan Pipeline (`azure-pipelines.yml`)
-
-1. **Build, Test, and Analyze**
-   - Install dependency dengan `npm ci`
-   - Lakukan linting (ESLint & Stylelint)
-   - Analisa kualitas kode dengan SonarQube
-   - Jalankan HTTP server lokal untuk testing
-   - Lakukan E2E testing otomatis (Cypress)
-   - Publish hasil test ke dashboard
-
-2. **Staging (Prepare Artifact)**
-   - Checkout source code
-   - Copy semua file aplikasi ke folder staging
-   - Publish artifact hasil build agar siap di-deploy
-
-3. **Deploy ke Azure Static Web App**
-   - Download artifact hasil build
-   - Deploy aplikasi ke Azure Static Web App secara otomatis
-
-- **cypress.config.js**
-  - File konfigurasi utama Cypress untuk end-to-end testing.
-  - Menggunakan reporter JUnit, sehingga hasil test otomatis dapat di-export dalam format XML dan dibaca oleh pipeline CI/CD (misal Azure DevOps).
-  - Semua hasil test akan tersimpan di folder `results/`, siap untuk dianalisis dan dipantau oleh tim.
-
-- **eslint.config.mjs**
-  - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
-  - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
-  - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
-
-- **eslint.config.mjs**
-  - File konfigurasi utama untuk ESLint. Memastikan seluruh kode JavaScript (baik aplikasi maupun testing) mengikuti standar penulisan yang baik.
-  - Secara otomatis mengenali lingkungan browser, Node.js, dan testing (Mocha, Chai, Cypress) sehingga meminimalkan error palsu pada kode pengujian.
-  - Membantu menjaga kualitas dan konsistensi seluruh kode di project.
-
-  package-lock.json
-File ini secara otomatis dibuat oleh npm untuk mengunci semua versi dependency (termasuk subdependency) yang digunakan project. File ini memastikan setiap instalasi dependency akan menghasilkan struktur dependency yang persis sama, sehingga build project tetap konsisten di semua environment.
-Jangan hapus atau edit manual file ini, dan pastikan file ini selalu ikut di-commit ke repository.
-
-- **package.json**
-  - File utama pengelolaan dependency dan script aplikasi.
-  - Berisi daftar library yang dibutuhkan project (seperti ESLint, Stylelint, Cypress) serta script otomatis untuk linting dan testing.
-  - Dengan file ini, developer cukup menjalankan `npm install` untuk men-setup environment, dan `npm run lint` untuk cek kualitas kode.
-
-### 🛠️ Linting (Quality Check)
-
-- **Linting JavaScript:**  
-  - Menggunakan ESLint dengan aturan standar (`js/recommended`) dan dukungan untuk file testing (Mocha, Chai, Cypress).
-  - Memastikan kode JavaScript bebas error sintaks dan konsisten.
-
-- **Linting CSS:**  
-  - Menggunakan Stylelint dengan config standar.
-  - Memastikan seluruh kode CSS rapi, tidak ada typo, dan mengikuti best practice.
-
-- **Linting dijalankan otomatis lewat:**
-  - Perintah `npm run lint`
-  - Pipeline CI/CD sebelum test dan deploy
-### 🛡️ SonarQube Analysis
-
-SonarQube secara otomatis menganalisis seluruh source code aplikasi (kecuali dependency dan file testing Cypress), dengan tujuan:
-- Mendeteksi bug potensial, code smells, dan kerentanan keamanan.
-- Memberikan metrik kualitas kode seperti duplication, complexity, dan maintainability.
-- Pipeline otomatis gagal jika ada issue blocker atau critical, sehingga kode yang masuk selalu dalam kondisi baik.
-- Hasil detail analisis dapat dilihat di dashboard SonarQube (lihat link di Azure DevOps pipeline).
-
+*SonarQube Gagal Jalan*
+  - Masalah: Versi Sonar terlalu lama.
+  - Solusi: Upgrade ke versi 7.
