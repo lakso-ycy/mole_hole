@@ -72,14 +72,14 @@ stages:
 
         # Step DEBUG 1: cek apakah folder coverage sudah ada dan ada file di dalamnya
           - script: |
-            echo "=== CEK ISI FOLDER COVERAGE ==="
-            ls -lah coverage
+              echo "=== CEK ISI FOLDER COVERAGE ==="
+              ls -lah coverage
             displayName: "DEBUG: Cek isi folder coverage di pipeline"
 
         # Step DEBUG 2: cek apakah lcov.info sudah terbentuk
           - script: |
-            echo "=== CEK ISI FILE coverage/lcov.info ==="
-            cat coverage/lcov.info || echo "lcov.info TIDAK ADA"
+              echo "=== CEK ISI FILE coverage/lcov.info ==="
+              cat coverage/lcov.info || echo "lcov.info TIDAK ADA"
             displayName: "DEBUG: Cek isi coverage/lcov.info"
           
         # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
