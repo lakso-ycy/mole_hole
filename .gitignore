@@ -23,7 +23,7 @@ Thumbs.db
 
 # === Coverage ===
 # Semua file/folder hasil code coverage dan instrumentasi testing
-coverage/
+# coverage/
 results/
 .nyc_output/
 instrumented/
