@@ -42,12 +42,18 @@ stages:
 
           # 4. Siapkan Folder `instrumented` dengan Benar
           - script: |
-              mkdir -p instrumented
-              npx nyc instrument ./script.js instrumented/script.js
               cp index.html instrumented/
+              cp script.js instrumented/
+              cp instrumented/script.js instrumented/
               cp style.css instrumented/
+              cp package.json instrumented/
+              cp -r cypress instrumented/
+              cp cypress.config.js instrumented/
+              cp img/hammer.png instrumented/
+              cp img/hammer-hit.png instrumented/
               cp -r img instrumented/
               cp -r sounds instrumented/
+              cp README.md instrumented/
             displayName: "Prepare 'instrumented' directory for testing"
 
           # 5. Jalankan Server dan Tes Cypress
