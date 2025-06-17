@@ -72,13 +72,13 @@ stages:
               ls -lah instrumented
             displayName: "DEBUG: Lihat isi folder instrumented"
 
-        # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
+        # Step 5: Start HTTP Server (untuk test E2E)
         # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
           - script: npx http-server ./instrumented -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
-        # ----------- Step 9: Jalankan Cypress E2E Tests -----------
+        # Step 6: Jalankan Cypress E2E Tests
         # Menjalankan test end-to-end menggunakan Cypress. Test berjalan di browser (otomatis).
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests"
@@ -98,7 +98,7 @@ stages:
               cat coverage/lcov.info || echo "lcov.info TIDAK ADA"
             displayName: "DEBUG: Cek isi coverage/lcov.info"
 
-        # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
+        # Step 7: Publish Cypress Test Results ke Azure DevOps
         # Mengunggah hasil test (format JUnit XML) ke Azure DevOps supaya bisa dilihat di dashboard (tab Tests).
           - task: PublishTestResults@2
             inputs:
@@ -109,8 +109,8 @@ stages:
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
 
-            # Step 5: Prepare SonarQube Analysis
-          # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
+        # Step 8: Prepare SonarQube Analysis
+        # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION) # Nama koneksi ke SonarQube di Azure
@@ -125,12 +125,12 @@ stages:
                 sonar.javascript.lcov.reportPaths=./coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
-        # ----------- Step 6: Run SonarQube Analysis -----------
+        # Step 9: Run SonarQube Analysis -----------
         # Memulai proses analisa code quality oleh SonarQube.
           - task: SonarQubeAnalyze@7
             displayName: "Run SonarQube Analysis"
 
-        # ----------- Step 7: Publish SonarQube Quality Gate Result -----------
+        # Step 10: Publish SonarQube Quality Gate Result
         # Mengirim hasil analisa ke dashboard SonarQube (cek Quality Gate pass/fail)
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
@@ -147,7 +147,7 @@ stages:
           - checkout: self # Perintah ini hanya mengambil kode terbaru yang dijalankan oleh yaml ini
             displayName: "Checkout source code"
 
-          # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
+          # Step 11 (dari YAML lama): Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)" # Repos utama karena hanya single repos, jadi agen otomatis mengambil kode yang sama dari GUI yang developer lihat
@@ -163,7 +163,7 @@ stages:
               TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files" # SourceFolder akan di-copy oleh agen dan paste files tersebut kesini. Ini tuh artifact atau tempat penyimpanan sementara yang di-paste oleh agen dan nanti dihapus secara otomatis
             displayName: "Copy game files to Staging Directory" 
 
-          # Step 10 (dari YAML lama): Publish Build Artifact
+          # Step 12 (dari YAML lama): Publish Build Artifact
           - task: PublishBuildArtifacts@1 
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files" # Semacam source folder dan akan di-copy
