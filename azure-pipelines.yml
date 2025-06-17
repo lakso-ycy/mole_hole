@@ -1,25 +1,31 @@
+# ==========================================
+# Jalankan pipeline setiap ada commit/PR ke branch main
 trigger:
   - main
 
 pr:
   - main
 
+# Gunakan VM Ubuntu terbaru dari Azure Pipelines
 pool:
   vmImage: "ubuntu-latest"
 
+# Variabel global untuk pipeline
 variables:
-  - group: deploy_token_fleksibel
+  - group: deploy_token_fleksibel # Variabel group (token rahasia dsb)
   - name: nodeVersion
-    value: "20.x"
+    value: "20.x" # Versi Node.js yang digunakan
   - name: SONARQUBE_SERVICE_CONNECTION
-    value: "azurevm"
+    value: "azurevm" # Nama koneksi SonarQube di Azure DevOps
   - name: SONARQUBE_PROJECT_KEY
-    value: "mole-and-hole"
+    value: "mole-and-hole" # Key project SonarQube
   - name: SONARQUBE_PROJECT_NAME
-    value: "mole and hole"
+    value: "mole and hole" # Nama project di SonarQube
 
+# ========== STAGE 1: Build, Test, Analyze ==========
 stages:
   # STAGE 1: Build, Test, and Analyze
+  # Stage ini adalah tahap pertama dari pipeline, namanya bebas (Build_Test_Analyze) untuk identifikasi.
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
@@ -27,65 +33,77 @@ stages:
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
           # Step 1: Install Node.js
+          # Memasang Node.js versi sesuai variabel pipeline ke dalam agent pipeline
           - task: NodeTool@0
             inputs:
-              versionSpec: $(nodeVersion)
+              versionSpec: $(nodeVersion) # Mengambil dari variabel di atas, misal '20.x'
             displayName: "Install Node.js $(nodeVersion)"
 
           # Step 2: Install Dependencies
+           # Perintah 'npm ci' akan install semua dependency dari package-lock.json dengan cepat dan konsisten (lebih baik untuk CI dibanding 'npm install').
           - script: npm ci
             displayName: "Clean install project dependencies (npm ci)"
 
           # Step 3: Fix Permissions (Prevent Permission Denied)
+          # Memastikan semua file binary dalam node_modules/.bin bisa dieksekusi (chmod +x), penting di agent Ubuntu/Linux.
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
-            condition: succeeded()
+            condition: succeeded() # Step ini dijalankan hanya kalau step sebelumnya sukses
 
           # Step 4: Run ESLint & Stylelint
+          # Menjalankan perintah 'npm run lint' untuk mengecek style dan kualitas code JavaScript & CSS.
           - script: npm run lint
             displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: true
+            continueOnError: false # Jika linting error, pipeline tetap berenti
 
           # Step 5: Prepare SonarQube Analysis
+          # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
           - task: SonarQubePrepare@7
             inputs:
-              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-              scannerMode: "CLI"
-              configMode: "manual"
-              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-              cliProjectName: $(SONARQUBE_PROJECT_NAME)
-              extraProperties: |
-                sonar.sources=.
+              SonarQube: $(SONARQUBE_SERVICE_CONNECTION) # Nama koneksi ke SonarQube di Azure
+              scannerMode: "CLI" # Mode pemindaian (pakai CLI)
+              configMode: "manual" # Setting manual
+              cliProjectKey: $(SONARQUBE_PROJECT_KEY) # Key project SonarQube
+              cliProjectName: $(SONARQUBE_PROJECT_NAME) # Nama project di SonarQube
+              extraProperties: | # Properti tambahan, misal meng-exclude folder
+                sonar.sources=. 
                 sonar.exclusions=**/node_modules/**,cypress/**
             displayName: "Prepare SonarQube Analysis Configuration"
 
+        # ----------- Step 6: Run SonarQube Analysis -----------
+        # Memulai proses analisa code quality oleh SonarQube.
           - task: SonarQubeAnalyze@7
             displayName: "Run SonarQube Analysis"
 
+        # ----------- Step 7: Publish SonarQube Quality Gate Result -----------
+        # Mengirim hasil analisa ke dashboard SonarQube (cek Quality Gate pass/fail)
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Step 6: Start Server for Cypress
+        # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
+        # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
           - script: npx http-server -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
-          # Step 7: Run Cypress Tests
+        # ----------- Step 9: Jalankan Cypress E2E Tests -----------
+        # Menjalankan test end-to-end menggunakan Cypress. Test berjalan di browser (otomatis).
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests"
             env:
-              CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
+              CYPRESS_BASE_URL: "http://localhost:8080" # Base URL yang akan diakses Cypress selama test
+            continueOnError: false # kalo gagal maka berenti
 
-          # Step 8: Publish Cypress Test Results
+        # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
+        # Mengunggah hasil test (format JUnit XML) ke Azure DevOps supaya bisa dilihat di dashboard (tab Tests).
           - task: PublishTestResults@2
             inputs:
-              testResultsFormat: "JUnit"
-              testResultsFiles: "**/results/cypress-results-*.xml"
-              mergeTestResults: true
-              failTaskOnFailedTests: true # Ini akan mengagalkan job jika ada tes yang gagal
+              testResultsFormat: "JUnit" # Format hasil test
+              testResultsFiles: "**/results/cypress-results-*.xml" # File hasil test Cypress
+              mergeTestResults: true # Gabungkan hasil jika ada banyak file
+              failTaskOnFailedTests: true # Build dianggap gagal kalau test gagal
             displayName: "Publish Cypress Test Results"
-            condition: succeededOrFailed()
+            condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
 
   # STAGE 2: Staging - Prepare Artifact
   - stage: Staging

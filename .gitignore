@@ -1,24 +1,29 @@
-# Cypress artifacts
+# === Cypress artifacts ===
+# Hasil screenshot dan video otomatis dari test Cypress (untuk debugging saja)
 cypress/screenshots/
 cypress/videos/
 
-# Node modules
+# === Node modules ===
+# Semua dependency yang diinstall lewat npm, sangat besar, tidak perlu di repo
 node_modules/
 
-# Build output
+# === Build output ===
+# Hasil build/production (Webpack, Vite, React, dll), bisa dibuat ulang
 dist/
 build/
 
-# VSCode settings
+# === VSCode settings ===
+# Pengaturan khusus editor VS Code, hanya untuk user lokal
 .vscode/
 
-# System files
+# === System files ===
+# File metadata sistem operasi (MacOS/Windows), tidak ada hubungannya dengan project
 .DS_Store
 Thumbs.db
 
-# Coverage
+# === Coverage ===
+# Semua file/folder hasil code coverage dan instrumentasi testing
 coverage/
 results/
 .nyc_output/
-/instrumented/
-
+instrumented/

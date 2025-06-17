@@ -1,35 +1,40 @@
 describe("Mole and Hole Game Functionality", () => {
+  // Variabel bantuan yang dipakai di beberapa test, supaya mudah diganti kalau perlu.
   const playerName = "Cypress Tester";
   const defaultDuration = "20"; // Sesuai dengan tombol durasi default yang aktif di HTML
   const shortDuration = "15";
 
+  // sebelum menjalankan setiap test dia akan ke membuka basUrl nya yang udah di set di cypress
   beforeEach(() => {
     cy.visit("/"); // Mengunjungi baseUrl (http://localhost:8080)
   });
 
+  // ini tampilan awal harusnya muncul
   it("should load the game page with initial elements visible", () => {
-    cy.get("h1").should("contain.text", "yo, If you can"); //
-    cy.get(".start-btn").invoke("text").should("include", "Start");
-    cy.get("#player-name").should("be.visible"); //
-    cy.get(".start-btn").should("be.visible"); //
-    cy.get(".cancel-btn").should("not.be.visible"); //
-    cy.get(".score-block").should("contain.text", "Score: 0"); //
-    cy.get("#time-left-display").should("contain.text", defaultDuration); //
-    cy.get(".levels input#easy").should("be.checked"); //
-    cy.get(".mole-image-selector").should("be.visible"); //
-    cy.get(".highscore-section").should("be.visible"); //
-    cy.get("#highscore-display").should("contain.text", "Belum ada skor"); //
+    cy.get("h1").should("contain.text", "yo, If you can"); //ngecek judul
+    cy.get(".start-btn").invoke("text").should("include", "Start"); //ngecek button start
+    cy.get("#player-name").should("be.visible"); //ngecek nama player seharusnya keliatan
+    cy.get(".start-btn").should("be.visible"); //ngecek button start seharusnya keliatan
+    cy.get(".cancel-btn").should("not.be.visible"); //ngecek cancel button harusnya ga keliatan
+    cy.get(".score-block").should("contain.text", "Score: 0"); //harusnya awal nilainya 0
+    cy.get("#time-left-display").should("contain.text", defaultDuration); //ngecek duration awal
+    cy.get(".levels input#easy").should("be.checked"); //ngecek level harusnya default easy
+    cy.get(".mole-image-selector").should("be.visible"); //ngecek image selector harusnya muncul
+    cy.get(".highscore-section").should("be.visible"); // highscorenya keliatan
+    cy.get("#highscore-display").should("contain.text", "Belum ada skor"); //harusnya default belum ada highscore
   });
 
+  // seharusnya ga muncul kalo nama player gamuncul
   it("should not start game if player name is empty and show message", () => {
-    cy.get(".start-btn").click(); //
-    cy.get("#messageBoxText").should("contain.text", "Masukkan nama dulu ya!"); //
-    cy.get("#messageBoxOverlay").should("be.visible"); //
-    cy.get("#messageBoxButton").click(); //
-    cy.get("#messageBoxOverlay").should("not.be.visible"); //
-    cy.get(".start-btn").should("be.visible"); //
+    cy.get(".start-btn").click(); //klik button
+    cy.get("#messageBoxText").should("contain.text", "Masukkan nama dulu ya!"); //lalu kalo pencet start belum ada nama dia akan ada warning
+    cy.get("#messageBoxOverlay").should("be.visible"); //harusnya keliatan overlaynya
+    cy.get("#messageBoxButton").click(); // klik ok
+    cy.get("#messageBoxOverlay").should("not.be.visible"); // maka hilang
+    cy.get(".start-btn").should("be.visible"); //lalu ada start buttonnya lgai  
   });
 
+  // Simulasi input nama, pilih durasi dan level, lalu klik Start.Cek bahwa tombol dan input di-disable, game benar-benar berjalan.
   it("should allow typing player name, select duration, select level, and start the game", () => {
     cy.get("#player-name").type(playerName); //
     // Pilih durasi 15 detik
@@ -52,6 +57,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get("#time-left-display").should("contain.text", shortDuration); //
   });
 
+  // Jalankan game, klik mole pertama yang muncul. Tulis skor saat ini di log (tanpa hard assertion, hanya log hasilnya).
   it("should increase score when a mole is hit", () => {
     // Masukkan nama pemain
     cy.get("#player-name").type("Demo User");
@@ -79,6 +85,9 @@ describe("Mole and Hole Game Functionality", () => {
     cy.wait(2000);
   });
 
+  // Mainkan game sampai waktu habis.
+  // Cek apakah skor dan highscore terupdate.
+  // Banyak log (cy.log) agar saat gagal mudah debug.
   it("should end the game when time is up and update high score", () => {
     cy.get("#player-name").type(playerName);
     cy.get(`.duration-btn[data-duration="${shortDuration}"]`).click();
@@ -114,6 +123,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.wait(3000); // biar nggak langsung nutup di mode headless
   });
 
+  // Mainkan game, lalu klik Cancel.Pastikan muncul pesan game dibatalkan, skor tidak dicatat.
   it("should allow cancelling the game", () => {
     cy.get("#player-name").type(playerName); //
     cy.get(".start-btn").click(); //
@@ -135,6 +145,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get(".cancel-btn").should("not.be.visible"); //
   });
 
+  
   it("should change mole image on upload and remove image", () => {
     // Upload gambar
     // Cypress tidak bisa berinteraksi langsung dengan dialog file browser asli.
