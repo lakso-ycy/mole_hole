@@ -58,7 +58,7 @@ stages:
 
         # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
         # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
-          - script: npx http-server -p 8080 &
+          - script: npx http-server ./instrumented -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
