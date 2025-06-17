@@ -37,7 +37,7 @@ stages:
             displayName: "Run Linter (ESLint & Stylelint)"
             continueOnError: false
 
-          - script: npx nyc instrument . ./instrumented
+          - script: npx nyc instrument ./ ./instrumented
             displayName: "Instrument source code for coverage"
 
           - script: |
