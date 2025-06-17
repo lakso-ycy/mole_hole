@@ -19,52 +19,56 @@ variables:
     value: "mole and hole"
 
 stages:
+  # STAGE 1: Build, Test, and Analyze
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
+          # Step 1: Install Node.js
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
             displayName: "Install Node.js $(nodeVersion)"
 
+          # Step 2: Install Dependencies
           - script: npm ci
             displayName: "Clean install project dependencies (npm ci)"
 
-          - script: npm run lint
-            displayName: "Run Linter (ESLint & Stylelint)"
-            continueOnError: false
-
+          # Step 3: Instrumentasi kode untuk coverage
           - script: npx nyc instrument ./ ./instrumented
             displayName: "Instrument source code for coverage"
 
+          # Step 4: Copy semua asset pendukung ke instrumented/
           - script: |
               cp index.html instrumented/
-              cp script.js instrumented/
-              cp instrumented/script.js instrumented/
               cp style.css instrumented/
+              cp script.js instrumented/
               cp package.json instrumented/
-              cp -r cypress instrumented/
-              cp cypress.config.js instrumented/
-              cp img/hammer.png instrumented/
-              cp img/hammer-hit.png instrumented/
               cp -r img instrumented/
               cp -r sounds instrumented/
+              cp hammer-hit.png instrumented/
+              cp hammer.png instrumented/
               cp README.md instrumented/
             displayName: "Copy all supporting assets to instrumented/"
 
+          # Step 5: Fix Permissions (Prevent Permission Denied)
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
 
+          # Step 6: Run ESLint & Stylelint
+          - script: npm run lint
+            displayName: 'Run Linter (ESLint & Stylelint)'
+            continueOnError: false
+
+          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
           - script: npx http-server -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080)"
+            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          - script: npx wait-on http://localhost:8080
-            displayName: "Wait for HTTP server before running Cypress"
-
+          # Step 9: Jalankan Cypress test dari folder instrumented/
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests (on instrumented/)"
             env:
