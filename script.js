@@ -112,12 +112,10 @@ durationButtons.forEach((button) => {
  * @returns {string} The ID of the selected difficulty.
  */
 
-// hapus fitur untuk demo
-// function getDifficultyLevel() {
-//   const selectedLevel = document.querySelector('input[name="level"]:checked');
-//   return selectedLevel ? selectedLevel.id : "easy"; // Default to easy
-// }
-// hapus fitur untuk demo
+function getDifficultyLevel() {
+  const selectedLevel = document.querySelector('input[name="level"]:checked');
+  return selectedLevel ? selectedLevel.id : "easy"; // Default to easy
+}
 
 /**
  * Generates a random time between a min and max value.
@@ -187,27 +185,25 @@ function startGame() {
     return;
   }
 
-  // hapus fitur untuk demo
-  const difficulty = "easy";//getDifficultyLevel();
-  // let showDuration, hideDuration;
-  // switch (difficulty) {
-  //   case "easy":
-  //     showDuration = 750;
-  //     hideDuration = 1200;
-  //     break;
-  //   case "medium":
-  //     showDuration = 500;
-  //     hideDuration = 900;
-  //     break;
-  //   case "hard":
-  //     showDuration = 300;
-  //     hideDuration = 600;
-  //     break;
-  //   default: // Fallback to easy
-  //     showDuration = 750;
-  //     hideDuration = 1200;
-  // }
-// hapus fitur untuk demo
+  const difficulty = getDifficultyLevel();
+  let showDuration, hideDuration;
+  switch (difficulty) {
+    case "easy":
+      showDuration = 750;
+      hideDuration = 1200;
+      break;
+    case "medium":
+      showDuration = 500;
+      hideDuration = 900;
+      break;
+    case "hard":
+      showDuration = 300;
+      hideDuration = 600;
+      break;
+    default: // Fallback to easy
+      showDuration = 750;
+      hideDuration = 1200;
+  }
 
   console.log(
     `Game dimulai oleh: ${validatedPlayerName}, Level: ${difficulty}, Durasi: ${selectedDuration}s`
@@ -220,9 +216,7 @@ function startGame() {
   // Update UI controls
   if (cancelBtn) cancelBtn.style.display = "inline-block";
   if (startBtn) startBtn.style.display = "none";
-  // hapus fitur untuk demo
-  // if (levelsContainer) levelsContainer.style.visibility = "hidden";
-  // hapus fitur untuk demo
+  if (levelsContainer) levelsContainer.style.visibility = "hidden";
   if (playerNameInput) playerNameInput.disabled = true;
   durationButtons.forEach((button) => (button.disabled = true));
 

@@ -54,7 +54,7 @@ stages:
           # Menjalankan perintah 'npm run lint' untuk mengecek style dan kualitas code JavaScript & CSS.
           - script: npm run lint
             displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: true # Jika linting error, pipeline tetap berenti
+            continueOnError: false # Jika linting error, pipeline tetap berenti
 
           - script: |
               echo "🎯 Jalankan nyc instrument..."

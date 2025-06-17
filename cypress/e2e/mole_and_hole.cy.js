@@ -18,9 +18,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get(".cancel-btn").should("not.be.visible"); //ngecek cancel button harusnya ga keliatan
     cy.get(".score-block").should("contain.text", "Score: 0"); //harusnya awal nilainya 0
     cy.get("#time-left-display").should("contain.text", defaultDuration); //ngecek duration awal
-    // hapus fitur untuk demo
-    // cy.get(".levels input#easy").should("be.checked"); //ngecek level harusnya default easy
-    // hapus fitur untuk demo
+    cy.get(".levels input#easy").should("be.checked"); //ngecek level harusnya default easy
     cy.get(".mole-image-selector").should("be.visible"); //ngecek image selector harusnya muncul
     cy.get(".highscore-section").should("be.visible"); // highscorenya keliatan
     cy.get("#highscore-display").should("contain.text", "Belum ada skor"); //harusnya default belum ada highscore
@@ -43,10 +41,8 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get(`.duration-btn[data-duration="${shortDuration}"]`).click(); //
     cy.get("#time-left-display").should("contain.text", shortDuration); //
     // Pilih level medium
-    // hapus fitur untuk demo
-    // cy.get("#medium").click(); //
-    // cy.get("#medium").should("be.checked"); //
-    // hapus fitur untuk demo
+    cy.get("#medium").click(); //
+    cy.get("#medium").should("be.checked"); //
     cy.get(".start-btn").click(); //
 
     // Verifikasi UI setelah game dimulai
