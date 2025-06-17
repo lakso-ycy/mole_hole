@@ -11,7 +11,7 @@ describe("Mole and Hole Game Functionality", () => {
 
   // ini tampilan awal harusnya muncul
   it("should load the game page with initial elements visible", () => {
-    cy.get("h1").should("contain.text", "yo, If you can"); //ngecek judul
+    cy.get("h1").should("contain.text", "Catch Me, If you can"); //ngecek judul
     cy.get(".start-btn").invoke("text").should("include", "Start"); //ngecek button start
     cy.get("#player-name").should("be.visible"); //ngecek nama player seharusnya keliatan
     cy.get(".start-btn").should("be.visible"); //ngecek button start seharusnya keliatan
