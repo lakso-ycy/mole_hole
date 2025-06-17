@@ -6,11 +6,15 @@ const { defineConfig } = require("cypress");
 module.exports = defineConfig({
   // jenis test disini adalah test end-to-end
   e2e: {
+    baseUrl: "http://localhost:8080",
     // tetap perlu di setup meskipun kosong karena default untuk deklarasi e2e test nya
     // fungsinya sebagai wadah plugin /event handler
     // plugin disini seperti mau nambah hasil coverage dll diaturnya disini
     // event handler disini task tambahan yang di deklarasikan seperti console.log("Testing dimulai..."); 
-    setupNodeEvents() {},
+    setupNodeEvents(on, config) {
+      require("@cypress/code-coverage/task")(on, config);
+      return config;
+    },
   },
   // ini adalah jenis file output yang mengeluarkan hasil test
   // ada banyak jenis lain seperti json, html, dot, mochasome, pilih sesuai kebutuhan

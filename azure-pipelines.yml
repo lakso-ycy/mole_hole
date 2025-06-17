@@ -70,6 +70,18 @@ stages:
               CYPRESS_BASE_URL: "http://localhost:8080" # Base URL yang akan diakses Cypress selama test
             continueOnError: false # kalo gagal maka berenti
 
+        # Step DEBUG 1: cek apakah folder coverage sudah ada dan ada file di dalamnya
+          - script: |
+              echo "=== CEK ISI FOLDER COVERAGE ==="
+              ls -lah coverage
+            displayName: "DEBUG: Cek isi folder coverage di pipeline"
+
+        # Step DEBUG 2: cek apakah lcov.info sudah terbentuk
+          - script: |
+              echo "=== CEK ISI FILE coverage/lcov.info ==="
+              cat coverage/lcov.info || echo "lcov.info TIDAK ADA"
+            displayName: "DEBUG: Cek isi coverage/lcov.info"
+
         # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
         # Mengunggah hasil test (format JUnit XML) ke Azure DevOps supaya bisa dilihat di dashboard (tab Tests).
           - task: PublishTestResults@2
@@ -94,7 +106,7 @@ stages:
                 sonar.sources=. 
                 sonar.inclusions=script.js
                 sonar.exclusions=**/node_modules/**,cypress/**
-                sonar.javascript.lcov.reportPaths=./coverage/lcov.info
+                sonar.javascript.lcov.reportPaths=coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
         # ----------- Step 6: Run SonarQube Analysis -----------
