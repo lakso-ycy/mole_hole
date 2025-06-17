@@ -8,7 +8,8 @@
     "lint": "eslint . --ext .js --ignore-pattern coverage && stylelint \"**/*.css\" \"!coverage/**/*.css\" --ignore-path .gitignore",
     "pretest": "nyc instrument ./ ./instrumented",
     "cypress:open": "npx cypress open",
-    "cypress:run": "npx cypress run"
+    "cypress:run": "npx cypress run" ,
+    "coverage:report": "nyc report --reporter=lcov --reporter=text-summary"
   },
   "repository": {
     "type": "git",
