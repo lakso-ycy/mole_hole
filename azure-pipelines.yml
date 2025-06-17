@@ -56,22 +56,22 @@ stages:
             displayName: 'Run Linter (ESLint & Stylelint)'
             continueOnError: false # Jika linting error, pipeline tetap berenti
 
-        # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
-        # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
+          # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
+          # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
           - script: npx http-server -p 8080 &
             displayName: "Start HTTP Server for Cypress (Port 8080)"
             workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
 
-        # ----------- Step 9: Jalankan Cypress E2E Tests -----------
-        # Menjalankan test end-to-end menggunakan Cypress. Test berjalan di browser (otomatis).
+          # ----------- Step 9: Jalankan Cypress E2E Tests -----------
+          # Menjalankan test end-to-end menggunakan Cypress. Test berjalan di browser (otomatis).
           - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
             displayName: "Run Cypress E2E Tests"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080" # Base URL yang akan diakses Cypress selama test
             continueOnError: false # kalo gagal maka berenti
 
-        # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
-        # Mengunggah hasil test (format JUnit XML) ke Azure DevOps supaya bisa dilihat di dashboard (tab Tests).
+          # ----------- Step 10: Publish Cypress Test Results ke Azure DevOps -----------
+          # Mengunggah hasil test (format JUnit XML) ke Azure DevOps supaya bisa dilihat di dashboard (tab Tests).
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit" # Format hasil test
@@ -81,12 +81,12 @@ stages:
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
            
-            - script: npx nyc report --reporter=lcov --report-dir=coverage
-              displayName: "Generate lcov.info from Cypress run"
+          - script: npx nyc report --reporter=lcov --report-dir=coverage
+            displayName: "Generate lcov.info from Cypress run"
               
               # BENERIN PATH
-            - script: sed -i 's#SF:D:\\ITS\\SEM 6\\PSO\\fp-pso-fleksibel\\#SF:#g' coverage/lcov.info
-              displayName: "Fix lcov.info path to be relative"
+          - script: sed -i 's#SF:D:\\ITS\\SEM 6\\PSO\\fp-pso-fleksibel\\#SF:#g' coverage/lcov.info
+            displayName: "Fix lcov.info path to be relative"
 
             # Step 5: Prepare SonarQube Analysis
           # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
