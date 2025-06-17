@@ -92,6 +92,7 @@ stages:
               cliProjectName: $(SONARQUBE_PROJECT_NAME) # Nama project di SonarQube
               extraProperties: | # Properti tambahan, misal meng-exclude folder
                 sonar.sources=. 
+                sonar.inclusions=script.js
                 sonar.exclusions=**/node_modules/**,cypress/**
             displayName: "Prepare SonarQube Analysis Configuration"
 
