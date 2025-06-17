@@ -94,6 +94,7 @@ stages:
                 sonar.sources=. 
                 sonar.inclusions=script.js
                 sonar.exclusions=**/node_modules/**,cypress/**
+                sonar.javascript.lcov.reportPaths=./coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
         # ----------- Step 6: Run SonarQube Analysis -----------
