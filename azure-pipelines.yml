@@ -61,7 +61,10 @@ stages:
               npx nyc instrument ./ ./instrumented
               cp index.html instrumented/
               cp -r img instrumented/
+              cp -r sounds instrumented/
               cp style.css instrumented/
+              cp package.json instrumented/
+              cp README.md instrumented/
             displayName: "Instrumentasi + Salin index.html"
 
           - script: |
