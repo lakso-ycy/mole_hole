@@ -145,37 +145,38 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get(".cancel-btn").should("not.be.visible"); //
   });
 
-  
-  it("should change mole image on upload and remove image", () => {
-    // Upload gambar
-    // Cypress tidak bisa berinteraksi langsung dengan dialog file browser asli.
-    // Kita perlu 'menipu' input file dengan melampirkan file fixture.
-    // Buat folder 'fixtures' di dalam folder 'cypress', lalu taruh file gambar (misal 'test-mole.png') di sana.
-    cy.fixture("test-mole.png").then((fileContent) => {
-      cy.get("#mole-image-upload").attachFile({
-        //
-        fileContent: fileContent.toString(),
-        fileName: "test-mole.png",
-        mimeType: "image/png",
-      });
-    });
+// // hapus fitur untuk demo
+//   it("should change mole image on upload and remove image", () => {
+//     // Upload gambar
+//     // Cypress tidak bisa berinteraksi langsung dengan dialog file browser asli.
+//     // Kita perlu 'menipu' input file dengan melampirkan file fixture.
+//     // Buat folder 'fixtures' di dalam folder 'cypress', lalu taruh file gambar (misal 'test-mole.png') di sana.
+//     cy.fixture("test-mole.png").then((fileContent) => {
+//       cy.get("#mole-image-upload").attachFile({
+//         //
+//         fileContent: fileContent.toString(),
+//         fileName: "test-mole.png",
+//         mimeType: "image/png",
+//       });
+//     });
 
-    // Beri waktu untuk gambar diproses dan diterapkan
-    cy.wait(500);
-    // Verifikasi gambar tikus berubah (sulit diverifikasi langsung url background, tapi kita bisa cek console.log dari game )
-    // Untuk verifikasi yang lebih baik, mungkin perlu cara lain atau memodifikasi game untuk mempermudah tes ini.
-    // Di sini kita hanya memastikan tidak ada error.
+//     // Beri waktu untuk gambar diproses dan diterapkan
+//     cy.wait(500);
+//     // Verifikasi gambar tikus berubah (sulit diverifikasi langsung url background, tapi kita bisa cek console.log dari game )
+//     // Untuk verifikasi yang lebih baik, mungkin perlu cara lain atau memodifikasi game untuk mempermudah tes ini.
+//     // Di sini kita hanya memastikan tidak ada error.
 
-    // Hapus gambar
-    cy.get("#remove-mole-image-btn").click(); //
-    cy.get("#messageBoxText").should(
-      "contain.text",
-      "Gambar tikus telah dikembalikan ke default."
-    ); //
-    cy.get("#messageBoxOverlay").should("be.visible"); //
-    cy.get("#messageBoxButton").click(); //
-    // Verifikasi lagi (misalnya, dengan membandingkan style background, jika memungkinkan dan konsisten)
-  });
+//     // Hapus gambar
+//     cy.get("#remove-mole-image-btn").click(); //
+//     cy.get("#messageBoxText").should(
+//       "contain.text",
+//       "Gambar tikus telah dikembalikan ke default."
+//     ); //
+//     cy.get("#messageBoxOverlay").should("be.visible"); //
+//     cy.get("#messageBoxButton").click(); //
+//     // Verifikasi lagi (misalnya, dengan membandingkan style background, jika memungkinkan dan konsisten)
+//   });
+// // hapus fitur untuk demo
 
   it("should reset high scores", () => {
     // Mainkan game sekali untuk mendapatkan skor

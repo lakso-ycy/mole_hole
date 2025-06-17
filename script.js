@@ -16,8 +16,10 @@ const messageBoxOverlay = document.getElementById("messageBoxOverlay");
 const messageBoxText = document.getElementById("messageBoxText");
 const messageBoxButton = document.getElementById("messageBoxButton");
 
-const moleImageUpload = document.getElementById("mole-image-upload");
-const removeMoleImageBtn = document.getElementById("remove-mole-image-btn");
+// // hapus fitur untuk demo
+// const moleImageUpload = document.getElementById("mole-image-upload");
+// const removeMoleImageBtn = document.getElementById("remove-mole-image-btn");
+// // hapus fitur untuk demo
 
 // Default mole image URL (ensure this path is correct if you have a default image in CSS)
 // const defaultMoleImageUrl = 'url("img/mole.png")'; // Not directly used if CSS handles default
@@ -218,8 +220,11 @@ function startGame() {
   if (levelsContainer) levelsContainer.style.visibility = "hidden";
   if (playerNameInput) playerNameInput.disabled = true;
   durationButtons.forEach((button) => (button.disabled = true));
-  if (moleImageUpload) moleImageUpload.disabled = true;
-  if (removeMoleImageBtn) removeMoleImageBtn.disabled = true;
+
+// // hapus fitur untuk demo
+//   if (moleImageUpload) moleImageUpload.disabled = true;
+//   if (removeMoleImageBtn) removeMoleImageBtn.disabled = true;
+// // hapus fitur untuk demo
 
   if (countdownInterval) {
     clearInterval(countdownInterval); // Clear any existing timer
@@ -345,52 +350,55 @@ function handleMoleHit(e) {
   }
   if (scoreBoard) scoreBoard.textContent = score;
 }
+// // hapus fitur untuk demo
+// // Event listener for mole image upload
+// if (moleImageUpload) {
+//   moleImageUpload.addEventListener("change", function (event) {
+//     const file = event.target.files[0];
+//     if (file && file.type.startsWith("image/")) {
+//       const reader = new FileReader();
+//       reader.onload = function (e) {
+//         const newMoleImageUrl = e.target.result;
+//         moles.forEach((moleEl) => {
+//           moleEl.style.backgroundImage = `url(${newMoleImageUrl})`;
+//         });
+//         console.log("Gambar tikus diganti!");
+//         moleImageUpload.value = ""; // Clear the file input
+//       };
+//       reader.readAsDataURL(file);
+//     } else if (file) {
+//       showCustomMessage("Harap pilih file gambar (misalnya .png, .jpg, .gif).");
+//       moleImageUpload.value = ""; // Clear invalid file
+//     }
+//   });
+// }
+// // hapus fitur untuk demo
 
-// Event listener for mole image upload
-if (moleImageUpload) {
-  moleImageUpload.addEventListener("change", function (event) {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const newMoleImageUrl = e.target.result;
-        moles.forEach((moleEl) => {
-          moleEl.style.backgroundImage = `url(${newMoleImageUrl})`;
-        });
-        console.log("Gambar tikus diganti!");
-        moleImageUpload.value = ""; // Clear the file input
-      };
-      reader.readAsDataURL(file);
-    } else if (file) {
-      showCustomMessage("Harap pilih file gambar (misalnya .png, .jpg, .gif).");
-      moleImageUpload.value = ""; // Clear invalid file
-    }
-  });
-}
-
-// Event listener for the "Remove Photo" button
-if (removeMoleImageBtn) {
-  removeMoleImageBtn.addEventListener("click", function () {
-    // Allow removing image only if the game is not running
-    if (
-      startBtn &&
-      cancelBtn &&
-      startBtn.style.display === "none" &&
-      cancelBtn.style.display !== "none"
-    ) {
-      showCustomMessage("Tidak bisa menghapus foto saat game berlangsung.");
-      return;
-    }
-    moles.forEach((moleEl) => {
-      moleEl.style.backgroundImage = ""; // Resets to CSS default
-    });
-    if (moleImageUpload) {
-      moleImageUpload.value = ""; // Clear the file input as well
-    }
-    console.log("Gambar tikus dikembalikan ke default.");
-    showCustomMessage("Gambar tikus telah dikembalikan ke default.");
-  });
-}
+// // hapus fitur untuk demo
+// // Event listener for the "Remove Photo" button
+// if (removeMoleImageBtn) {
+//   removeMoleImageBtn.addEventListener("click", function () {
+//     // Allow removing image only if the game is not running
+//     if (
+//       startBtn &&
+//       cancelBtn &&
+//       startBtn.style.display === "none" &&
+//       cancelBtn.style.display !== "none"
+//     ) {
+//       showCustomMessage("Tidak bisa menghapus foto saat game berlangsung.");
+//       return;
+//     }
+//     moles.forEach((moleEl) => {
+//       moleEl.style.backgroundImage = ""; // Resets to CSS default
+//     });
+//     if (moleImageUpload) {
+//       moleImageUpload.value = ""; // Clear the file input as well
+//     }
+//     console.log("Gambar tikus dikembalikan ke default.");
+//     showCustomMessage("Gambar tikus telah dikembalikan ke default.");
+//   });
+// }
+// // hapus fitur untuk demo
 
 // Add other event listeners
 moles.forEach((mole) => mole.addEventListener("click", handleMoleHit));
