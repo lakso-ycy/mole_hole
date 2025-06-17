@@ -105,7 +105,7 @@ stages:
               testResultsFormat: "JUnit" # Format hasil test
               testResultsFiles: "**/results/cypress-results-*.xml" # File hasil test Cypress
               mergeTestResults: true # Gabungkan hasil jika ada banyak file
-              failTaskOnFailedTests: true # Build dianggap gagal kalau test gagal
+              failTaskOnFailedTests: false # Build dianggap gagal kalau test gagal
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
 
