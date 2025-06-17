@@ -6,6 +6,7 @@ pr:
 
 pool:
   vmImage: "ubuntu-latest"
+container: cypress/browsers:latest
 
 variables:
   - group: deploy_token_fleksibel
