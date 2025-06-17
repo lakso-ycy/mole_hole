@@ -4,8 +4,7 @@ describe("Mole and Hole Game Functionality", () => {
   const shortDuration = "15";
 
   beforeEach(() => {
-    cy.clearLocalStorage(); // Wajib untuk reset state
-    cy.visit("/"); // Gunakan '/' karena baseUrl sudah diatur
+    cy.visit("/"); // Mengunjungi baseUrl (http://localhost:8080)
   });
 
   it("should load the game page with initial elements visible", () => {

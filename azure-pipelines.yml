@@ -6,7 +6,6 @@ pr:
 
 pool:
   vmImage: "ubuntu-latest"
-container: cypress/browsers:latest
 
 variables:
   - group: deploy_token_fleksibel
@@ -20,88 +19,80 @@ variables:
     value: "mole and hole"
 
 stages:
+  # STAGE 1: Build, Test, and Analyze
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
-          - script: |
-              sudo apt-get update
-              sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libasound2 libxss1 libappindicator3-1 libindicator7
-            displayName: "Install Google Chrome Dependencies"
-          # 1. Install Node.js
+          # Step 1: Install Node.js
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
             displayName: "Install Node.js $(nodeVersion)"
 
-          # 2. Install Dependencies dari package-lock.json
+          # Step 2: Install Dependencies
           - script: npm ci
-            displayName: "Install project dependencies"
+            displayName: "Clean install project dependencies (npm ci)"
 
-          # 3. Jalankan Linter untuk Cek Kualitas Kode Statis
+          # Step 3: Instrumentasi kode untuk coverage
+          - script: npx nyc instrument ./ ./instrumented
+            displayName: "Instrument source code for coverage"
+
+          # Step 4: Copy semua asset pendukung ke instrumented/
+          - script: |
+              cp index.html instrumented/
+              cp style.css instrumented/
+              cp package.json instrumented/
+              cp -r img instrumented/
+              cp -r sounds instrumented/
+              cp README.md instrumented/
+            displayName: "Copy all supporting assets to instrumented/"
+
+          # Step 5: Fix Permissions (Prevent Permission Denied)
+          - script: chmod -R +x ./node_modules/.bin
+            displayName: "Fix permission for node_modules/.bin"
+            condition: succeeded()
+
+          # Step 6: Run ESLint & Stylelint
           - script: npm run lint
             displayName: "Run Linter (ESLint & Stylelint)"
             continueOnError: false
 
-          # 4. Siapkan Folder `instrumented` dengan Benar
-          - script: |
-              cp index.html instrumented/
-              cp script.js instrumented/
-              cp instrumented/script.js instrumented/
-              cp style.css instrumented/
-              cp package.json instrumented/
-              cp -r cypress instrumented/
-              cp cypress.config.js instrumented/
-              cp img/hammer.png instrumented/
-              cp img/hammer-hit.png instrumented/
-              cp -r img instrumented/
-              cp -r sounds instrumented/
-              cp README.md instrumented/
-            displayName: "Prepare 'instrumented' directory for testing"
-
-          # 5. Jalankan Server dan Tes Cypress
-          - script: npx http-server -p 8080 > /dev/null 2>&1 &
-            displayName: "Start HTTP Server from 'instrumented' folder"
+          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          - script: npx wait-on http://localhost:8080 -t 30000
-            displayName: "Wait for HTTP server to be ready"
-
-          - script: npx cypress run --browser chrome
-            displayName: "Run Cypress E2E Tests"
+          # Step 9: Jalankan Cypress test dari folder instrumented/
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests (on instrumented/)"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: false # Biarkan false agar pipeline gagal jika tes error
+            continueOnError: false
 
-          # 6. Generate Laporan Akhir Code Coverage (setelah tes selesai)
-          - script: npx nyc report
-            displayName: "Generate final code coverage report"
-            condition: always() # Jalankan ini bahkan jika tes gagal, agar kita tetap dapat laporan coverage
+            # Step 7: Prepare SonarQube Analysis
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+              scannerMode: "CLI"
+              configMode: "manual"
+              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+              cliProjectName: $(SONARQUBE_PROJECT_NAME)
+              extraProperties: |
+                sonar.sources=.
+                sonar.exclusions=**/node_modules/**,cypress/**
+                sonar.javascript.lcov.reportPaths=coverage/lcov.info
+            displayName: "Prepare SonarQube Analysis Configuration"
 
-          # 7. Jalankan Analisis SonarQube (setelah semua laporan tes & coverage dibuat)
-          # - task: SonarQubePrepare@7
-          #   inputs:
-          #     SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-          #     scannerMode: "CLI"
-          #     configMode: "manual"
-          #     cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-          #     cliProjectName: $(SONARQUBE_PROJECT_NAME)
-          #     extraProperties: |
-          #       sonar.sources=.
-          #       sonar.exclusions=**/node_modules/**,cypress/**,instrumented/**,coverage/**,mochawesome-report/**
-          #       sonar.javascript.lcov.reportPaths=coverage/lcov.info
-          #       # sonar.eslint.reportPaths=eslint-report.json # Uncomment jika Anda menghasilkan laporan ESLint
-          #   displayName: "Prepare SonarQube Analysis Configuration"
+          - task: SonarQubeAnalyze@7
+            displayName: "Run SonarQube Analysis"
 
-          # - task: SonarQubeAnalyze@7
-          #   displayName: "Run SonarQube Analysis"
+          - task: SonarQubePublish@7
+            displayName: "Publish SonarQube Quality Gate Result"
 
-          # - task: SonarQubePublish@7
-          #   displayName: "Publish SonarQube Quality Gate Result"
-          #   condition: always()
-
+          # Step 10: Publish code coverage artifact
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: "coverage"
@@ -109,23 +100,17 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Code Coverage Artifact"
 
+          # Step 11: Publish Cypress Test Results
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
-              testResultsFiles: "**/results/*.xml"
+              testResultsFiles: "**/results/cypress-results-*.xml"
               mergeTestResults: true
               failTaskOnFailedTests: true
-            condition: always()
             displayName: "Publish Cypress Test Results"
+            condition: succeededOrFailed()
 
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: "$(System.DefaultWorkingDirectory)/instrumented/cypress/screenshots"
-              ArtifactName: "CypressScreenshots"
-              publishLocation: "Container"
-            condition: always()
-            displayName: "Publish Cypress Screenshots"
-
+  # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
     displayName: "2. Staging - Prepare Deploy Artifact"
     dependsOn: Build_Test_Analyze
@@ -137,6 +122,7 @@ stages:
           - checkout: self
             displayName: "Checkout source code"
 
+          # Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)"
@@ -144,10 +130,10 @@ stages:
                 index.html
                 style.css
                 script.js
-                hammer-hit.png
-                hammer.png
                 img/**
                 sounds/**
+                hammer-hit.png
+                hammer.png
                 README.md
               TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
             displayName: "Copy game files to Staging Directory"
@@ -159,6 +145,7 @@ stages:
               publishLocation: "Container"
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
+  # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
     displayName: "3. Deploy - Deploy to Azure Static Web App"
     dependsOn: Staging

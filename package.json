@@ -1,39 +1,14 @@
 {
   "name": "fp-pso-fleksibel",
   "version": "1.0.0",
-  "description": "A simple Mole and Hole game built with HTML, CSS, and JS.",
+  "description": "this is a simple mole and hole a web based game built using html css js. <br/>\r where you have to catch the mole, whenever you click on mole you will get points.",
   "main": "script.js",
   "scripts": {
-    "// --- CLEAN & PREPARE ---": "",
-    "clean": "rm -rf instrumented coverage .nyc_output results",
-    "prepare-test-env": "npm run clean && mkdir -p instrumented && npx nyc instrument ./script.js instrumented/script.js && cp index.html style.css package.json hammer-hit.png hammer.png README.md instrumented/ && cp -r img sounds instrumented/",
-    "// --- CORE TASKS ---": "",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .js --ignore-pattern coverage && stylelint \"**/*.css\" \"!coverage/**/*.css\" --ignore-path .gitignore",
-    "serve": "http-server . -p 8080",
-    "serve:instrumented": "http-server ./instrumented -p 8080",
-    "// --- CYPRESS TESTING ---": "",
-    "cy:run": "cypress run --browser chrome",
-    "cy:open": "cypress open",
-    "// --- LOCAL WORKFLOWS ---": "",
-    "test:coverage": "npm run prepare-test-env && npm run cy:run",
-    "dev": "npm run prepare-test-env && cypress open"
-  },
-  "nyc": {
-    "all": true,
-    "include": [
-      "script.js"
-    ],
-    "exclude": [
-      "cypress/**",
-      "node_modules/**",
-      "instrumented/**"
-    ],
-    "reporter": [
-      "lcov",
-      "text",
-      "html"
-    ],
-    "report-dir": "coverage"
+    "pretest": "nyc instrument ./ ./instrumented",
+    "cypress:open": "npx cypress open",
+    "cypress:run": "npx cypress run"
   },
   "repository": {
     "type": "git",
@@ -50,8 +25,12 @@
     "eslint": "^9.27.0",
     "globals": "^16.2.0",
     "http-server": "^14.1.1",
+    "istanbul": "^0.4.5",
     "nyc": "^17.1.0",
     "stylelint": "^16.19.1",
     "stylelint-config-standard": "^38.0.0"
+  },
+  "dependencies": {
+    "fp-pso-fleksibel": "file:"
   }
 }
