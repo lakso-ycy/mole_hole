@@ -108,21 +108,19 @@ stages:
   # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
     displayName: "2. Staging - Prepare Deploy Artifact"
-    dependsOn: Build_Test_Analyze # Bergantung pada suksesnya stage Build
-    condition: succeeded()
+    dependsOn: Build_Test_Analyze #???
+    condition: succeeded() # Kalau PublishTestResults@2 sukses, maka jobs akan dilanjutkan
     jobs:
       - job: StagingJob
         displayName: "Create Release Artifact"
         steps:
-          # Langkah ini penting jika job berjalan pada agen yang berbeda atau konteks baru
-          # untuk mendapatkan akses ke source code yang mungkin dibutuhkan.
-          - checkout: self
+          - checkout: self # Perintah ini hanya mengambil kode terbaru yang dijalankan oleh yaml ini
             displayName: "Checkout source code"
 
           # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
-              SourceFolder: "$(Build.SourcesDirectory)"
+              SourceFolder: "$(Build.SourcesDirectory)" # Repos utama karena hanya single repos, jadi agen otomatis mengambil kode yang sama dari GUI yang developer lihat
               Contents: |
                 index.html
                 style.css
@@ -132,31 +130,31 @@ stages:
                 hammer-hit.png
                 hammer.png
                 README.md
-              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
-            displayName: "Copy game files to Staging Directory"
+              TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files" # SourceFolder akan di-copy oleh agen dan paste files tersebut kesini. Ini tuh artifact atau tempat penyimpanan sementara yang di-paste oleh agen dan nanti dihapus secara otomatis
+            displayName: "Copy game files to Staging Directory" 
 
           # Step 10 (dari YAML lama): Publish Build Artifact
-          - task: PublishBuildArtifacts@1
+          - task: PublishBuildArtifacts@1 
             inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files" # Semacam source folder dan akan di-copy
               ArtifactName: "HoleAndMoleGameDrop"
-              publishLocation: "Container"
+              publishLocation: "Container" # Paste file yang ada di PathtoPublish ke container
             displayName: "Publish Game Artifact (HoleAndMoleGameDrop)"
 
   # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
     displayName: "3. Deploy - Deploy to Azure Static Web App"
     dependsOn: Staging # Bergantung pada suksesnya stage Staging
-    condition: succeeded()
+    condition: succeeded() # Kalau kondisi upload ke container berhasil maka, jobs akan dilanjutkan
     jobs:
       - job: DeployJob
         displayName: "Deploy Game to Azure Static Web App"
         steps:
           - task: DownloadBuildArtifacts@0
             inputs:
-              buildType: current
+              buildType: current # Ambil artifact dari build/pipeline yang sedang dijalankan sekarang atau dia hanya mengambil code dari stage yang barusan dijalankan
               artifactName: HoleAndMoleGameDrop
-              downloadPath: $(System.ArtifactsDirectory)
+              downloadPath: $(System.ArtifactsDirectory) # Setelah di download maka disimpan sementara oleh agen, langsung dihapus nantinya
 
           - task: AzureStaticWebApp@0
             inputs:
@@ -165,5 +163,5 @@ stages:
               output_location: ""
               azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" # Dari variable group Anda
               skip_app_build: true
-              workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
+              workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop # Ambil source code terbaru yang sudah melewati tahap staging
             displayName: "🚀 Deploy to Azure Static Web App"
