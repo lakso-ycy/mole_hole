@@ -56,30 +56,6 @@ stages:
             displayName: 'Run Linter (ESLint & Stylelint)'
             continueOnError: false # Jika linting error, pipeline tetap berenti
 
-          # Step 5: Prepare SonarQube Analysis
-          # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
-          - task: SonarQubePrepare@7
-            inputs:
-              SonarQube: $(SONARQUBE_SERVICE_CONNECTION) # Nama koneksi ke SonarQube di Azure
-              scannerMode: "CLI" # Mode pemindaian (pakai CLI)
-              configMode: "manual" # Setting manual
-              cliProjectKey: $(SONARQUBE_PROJECT_KEY) # Key project SonarQube
-              cliProjectName: $(SONARQUBE_PROJECT_NAME) # Nama project di SonarQube
-              extraProperties: | # Properti tambahan, misal meng-exclude folder
-                sonar.sources=. 
-                sonar.exclusions=**/node_modules/**,cypress/**
-            displayName: "Prepare SonarQube Analysis Configuration"
-
-        # ----------- Step 6: Run SonarQube Analysis -----------
-        # Memulai proses analisa code quality oleh SonarQube.
-          - task: SonarQubeAnalyze@7
-            displayName: "Run SonarQube Analysis"
-
-        # ----------- Step 7: Publish SonarQube Quality Gate Result -----------
-        # Mengirim hasil analisa ke dashboard SonarQube (cek Quality Gate pass/fail)
-          - task: SonarQubePublish@7
-            displayName: "Publish SonarQube Quality Gate Result"
-
         # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
         # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
           - script: npx http-server -p 8080 &
@@ -104,6 +80,30 @@ stages:
               failTaskOnFailedTests: true # Build dianggap gagal kalau test gagal
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
+
+            # Step 5: Prepare SonarQube Analysis
+          # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
+          - task: SonarQubePrepare@7
+            inputs:
+              SonarQube: $(SONARQUBE_SERVICE_CONNECTION) # Nama koneksi ke SonarQube di Azure
+              scannerMode: "CLI" # Mode pemindaian (pakai CLI)
+              configMode: "manual" # Setting manual
+              cliProjectKey: $(SONARQUBE_PROJECT_KEY) # Key project SonarQube
+              cliProjectName: $(SONARQUBE_PROJECT_NAME) # Nama project di SonarQube
+              extraProperties: | # Properti tambahan, misal meng-exclude folder
+                sonar.sources=. 
+                sonar.exclusions=**/node_modules/**,cypress/**
+            displayName: "Prepare SonarQube Analysis Configuration"
+
+        # ----------- Step 6: Run SonarQube Analysis -----------
+        # Memulai proses analisa code quality oleh SonarQube.
+          - task: SonarQubeAnalyze@7
+            displayName: "Run SonarQube Analysis"
+
+        # ----------- Step 7: Publish SonarQube Quality Gate Result -----------
+        # Mengirim hasil analisa ke dashboard SonarQube (cek Quality Gate pass/fail)
+          - task: SonarQubePublish@7
+            displayName: "Publish SonarQube Quality Gate Result"
 
   # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
