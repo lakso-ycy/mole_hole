@@ -56,6 +56,11 @@ stages:
             displayName: 'Run Linter (ESLint & Stylelint)'
             continueOnError: false # Jika linting error, pipeline tetap berenti
 
+          - script: |
+              echo "📁 Cek isi folder instrumented/"
+              ls -lah instrumented
+            displayName: "DEBUG: Lihat isi folder instrumented"
+
         # ----------- Step 8: Start HTTP Server (untuk test E2E) -----------
         # Menjalankan server lokal pada port 8080 agar aplikasi bisa diakses oleh Cypress untuk testing otomatis.
           - script: npx http-server -p 8080 &
@@ -106,7 +111,7 @@ stages:
                 sonar.sources=. 
                 sonar.inclusions=script.js
                 sonar.exclusions=**/node_modules/**,cypress/**
-                sonar.javascript.lcov.reportPaths=coverage/lcov.info
+                sonar.javascript.lcov.reportPaths=./coverage/lcov.info
             displayName: "Prepare SonarQube Analysis Configuration"
 
         # ----------- Step 6: Run SonarQube Analysis -----------
