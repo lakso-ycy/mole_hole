@@ -25,6 +25,10 @@ stages:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
+          - script: |
+              sudo apt-get update
+              sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libasound2 libxss1 libappindicator3-1 libindicator7
+            displayName: "Install Google Chrome Dependencies"
           # 1. Install Node.js
           - task: NodeTool@0
             inputs:
@@ -89,15 +93,6 @@ stages:
           #       sonar.javascript.lcov.reportPaths=coverage/lcov.info
           #       # sonar.eslint.reportPaths=eslint-report.json # Uncomment jika Anda menghasilkan laporan ESLint
           #   displayName: "Prepare SonarQube Analysis Configuration"
-
-          # Uncomment jika Anda mengkonfigurasi Mochawesome
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: "mochawesome-report"
-              ArtifactName: "MochawesomeReport"
-              publishLocation: "Container"
-            displayName: "Publish Mochawesome HTML Report"
-            condition: always()
 
           # - task: SonarQubeAnalyze@7
           #   displayName: "Run SonarQube Analysis"
