@@ -12,9 +12,9 @@ describe("Mole and Hole Game Functionality", () => {
   // ini tampilan awal harusnya muncul
   it("should load the game page with initial elements visible", () => {
     cy.get("h1").should("contain.text", "cok, If you can"); //ngecek judul
-    cy.get(".start-btn").invoke("text").should("include", "Start"); //ngecek button start
+    // cy.get(".start-btn").invoke("text").should("include", "Start"); //ngecek button start
     cy.get("#player-name").should("be.visible"); //ngecek nama player seharusnya keliatan
-    cy.get(".start-btn").should("be.visible"); //ngecek button start seharusnya keliatan
+    // cy.get(".start-btn").should("be.visible"); //ngecek button start seharusnya keliatan
     cy.get(".cancel-btn").should("not.be.visible"); //ngecek cancel button harusnya ga keliatan
     cy.get(".score-block").should("contain.text", "Score: 0"); //harusnya awal nilainya 0
     cy.get("#time-left-display").should("contain.text", defaultDuration); //ngecek duration awal
@@ -26,12 +26,16 @@ describe("Mole and Hole Game Functionality", () => {
 
   // seharusnya ga muncul kalo nama player gamuncul
   it("should not start game if player name is empty and show message", () => {
+    // hapus fitur demo
     cy.get(".start-btn").click(); //klik button
+    // hapus fitur demo
     cy.get("#messageBoxText").should("contain.text", "Masukkan nama dulu ya!"); //lalu kalo pencet start belum ada nama dia akan ada warning
     cy.get("#messageBoxOverlay").should("be.visible"); //harusnya keliatan overlaynya
     cy.get("#messageBoxButton").click(); // klik ok
     cy.get("#messageBoxOverlay").should("not.be.visible"); // maka hilang
+    // hapus fitus demo
     cy.get(".start-btn").should("be.visible"); //lalu ada start buttonnya lgai  
+    // hapus fitur demo
   });
 
   // Simulasi input nama, pilih durasi dan level, lalu klik Start.Cek bahwa tombol dan input di-disable, game benar-benar berjalan.
@@ -43,10 +47,12 @@ describe("Mole and Hole Game Functionality", () => {
     // Pilih level medium
     cy.get("#medium").click(); //
     cy.get("#medium").should("be.checked"); //
-    cy.get(".start-btn").click(); //
+    // cy.get(".start-btn").click(); //
 
     // Verifikasi UI setelah game dimulai
+    // hapus fitur demo
     cy.get(".start-btn").should("not.be.visible"); //
+    // hapus fitur demo
     cy.get(".cancel-btn").should("be.visible"); //
     cy.get("#player-name").should("be.disabled"); //
     // cy.get(".levels").should("not.be.visible"); //
@@ -63,7 +69,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get("#player-name").type("Demo User");
 
     // Klik tombol mulai
-    cy.get(".start-btn").click();
+    // cy.get(".start-btn").click();
 
     // Tunggu mole muncul lalu klik
     cy.get(".mole", { timeout: 10000 })
@@ -91,7 +97,7 @@ describe("Mole and Hole Game Functionality", () => {
   it("should end the game when time is up and update high score", () => {
     cy.get("#player-name").type(playerName);
     cy.get(`.duration-btn[data-duration="${shortDuration}"]`).click();
-    cy.get(".start-btn").click();
+    // cy.get(".start-btn").click();
 
     // Coba klik mole, tapi tanpa assertion keras
     cy.get(".hole.up .mole", { timeout: 10000 }).then(($moles) => {
@@ -126,7 +132,7 @@ describe("Mole and Hole Game Functionality", () => {
   // Mainkan game, lalu klik Cancel.Pastikan muncul pesan game dibatalkan, skor tidak dicatat.
   it("should allow cancelling the game", () => {
     cy.get("#player-name").type(playerName); //
-    cy.get(".start-btn").click(); //
+    // cy.get(".start-btn").click(); //
     cy.get(".cancel-btn").should("be.visible"); //
 
     // Tunggu sebentar agar game benar-benar berjalan
@@ -141,7 +147,7 @@ describe("Mole and Hole Game Functionality", () => {
     cy.get("#messageBoxOverlay").should("be.visible"); //
     cy.get("#messageBoxButton").click(); // Tutup pesan
 
-    cy.get(".start-btn").should("be.visible"); //
+    // cy.get(".start-btn").should("be.visible"); //
     cy.get(".cancel-btn").should("not.be.visible"); //
   });
 
@@ -180,7 +186,7 @@ describe("Mole and Hole Game Functionality", () => {
     // Mainkan game sekali untuk mendapatkan skor
     cy.get("#player-name").type("SkorUntukDireset"); //
     cy.get(`.duration-btn[data-duration="${shortDuration}"]`).click(); //
-    cy.get(".start-btn").click(); //
+    // cy.get(".start-btn").click(); //
     cy.wait(parseInt(shortDuration) * 1000 + 1000); // Tunggu game selesai
     cy.get("#messageBoxButton").click(); // Tutup pesan waktu habis
 
@@ -206,7 +212,7 @@ describe("Mole and Hole Game Functionality", () => {
   describe("Game test", () => {
     it("should show Start button", () => {
       cy.visit("/");
-      cy.get(".start-btn").should("have.text", "Start");
+      // cy.get(".start-btn").should("have.text", "Start");
     });
   });
 

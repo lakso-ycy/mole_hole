@@ -2,7 +2,9 @@
 const holes = document.querySelectorAll(".hole");
 const scoreBoard = document.querySelector(".score");
 const moles = document.querySelectorAll(".mole");
-const startBtn = document.querySelector(".start-btn");
+// fitur buat demo
+// const startBtn = document.querySelector(".start-btn");
+// fitur buat demo
 const cancelBtn = document.querySelector(".cancel-btn");
 const levelsContainer = document.querySelector(".levels");
 const playerNameInput = document.getElementById("player-name");
@@ -214,8 +216,10 @@ function startGame() {
   timeUp = false;
 
   // Update UI controls
+  // hapus fitur demo
   if (cancelBtn) cancelBtn.style.display = "inline-block";
-  if (startBtn) startBtn.style.display = "none";
+  // if (startBtn) startBtn.style.display = "none";
+  // hapus fitur demo
   if (levelsContainer) levelsContainer.style.visibility = "hidden";
   if (playerNameInput) playerNameInput.disabled = true;
   durationButtons.forEach((button) => (button.disabled = true));
@@ -315,7 +319,9 @@ function endGame(nameParam, scoreParam, isCancelled = false) {
 
   // Update UI controls - this is common for both cancel and time-up
   if (cancelBtn) cancelBtn.style.display = "none";
-  if (startBtn) startBtn.style.display = "inline-block";
+  // hapus fitur demo
+  // if (startBtn) startBtn.style.display = "inline-block";
+  // hapus fitur demo
   if (levelsContainer) levelsContainer.style.visibility = "visible";
   if (playerNameInput) playerNameInput.disabled = false;
   durationButtons.forEach((button) => (button.disabled = false));
@@ -396,10 +402,11 @@ if (removeMoleImageBtn) {
 // Add other event listeners
 moles.forEach((mole) => mole.addEventListener("click", handleMoleHit));
 
-if (startBtn) {
-  startBtn.addEventListener("click", startGame);
-}
-
+// hapus fitur demo
+// if (startBtn) {
+//   startBtn.addEventListener("click", startGame);
+// }
+// hapus fitur demo
 if (cancelBtn) {
   cancelBtn.addEventListener("click", () => {
     const nameAtCancelTime = playerNameInput
