@@ -80,6 +80,13 @@ stages:
               failTaskOnFailedTests: true # Build dianggap gagal kalau test gagal
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed() # Step ini tetap dijalankan walau ada step error (supaya hasil test tetap dipublish)
+           
+            - script: npx nyc report --reporter=lcov --report-dir=coverage
+              displayName: "Generate lcov.info from Cypress run"
+              
+              # BENERIN PATH
+            - script: sed -i 's#SF:D:\\ITS\\SEM 6\\PSO\\fp-pso-fleksibel\\#SF:#g' coverage/lcov.info
+              displayName: "Fix lcov.info path to be relative"
 
             # Step 5: Prepare SonarQube Analysis
           # Menyiapkan konfigurasi untuk analisa kualitas kode di SonarQube.
