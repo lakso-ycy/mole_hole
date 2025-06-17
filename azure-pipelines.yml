@@ -36,47 +36,17 @@ stages:
           - script: npm ci
             displayName: "Clean install project dependencies (npm ci)"
 
-          # Step 3: Run ESLint & Stylelint (JALANKAN SEBELUM INSTRUMENT)
-          - script: npm run lint
-            displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: true
-
-          # Step 4: Instrumentasi kode untuk coverage (HANYA FILE YANG PERLU!)
-          - script: npx nyc instrument script.js instrumented/script.js
-            displayName: "Instrument source code for coverage"
-
-          # Step 5: Copy semua asset pendukung ke instrumented/
-          - script: |
-              cp index.html instrumented/
-              cp style.css instrumented/
-              cp package.json instrumented/
-              cp -r img instrumented/
-              cp -r sounds instrumented/
-              cp README.md instrumented/
-            displayName: "Copy all supporting assets to instrumented/"
-
-          # Step 6: Fix Permissions (Prevent Permission Denied)
+          # Step 3: Fix Permissions (Prevent Permission Denied)
           - script: chmod -R +x ./node_modules/.bin
             displayName: "Fix permission for node_modules/.bin"
             condition: succeeded()
 
-          # Step 7: Start Server for Cypress
-          - script: npx http-server instrumented -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080)"
-            workingDirectory: $(System.DefaultWorkingDirectory)
+          # Step 4: Run ESLint & Stylelint
+          - script: npm run lint
+            displayName: 'Run Linter (ESLint & Stylelint)'
+            continueOnError: true
 
-          # Step 8: Run Cypress Tests
-          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests"
-            env:
-              CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: true # Ubah jadi false jika ingin build gagal saat tes error
-
-          # Step 9: Generate Code Coverage Report
-          - script: npm run coverage:report
-            displayName: "Generate Coverage Report"
-
-          # Step 10: Prepare SonarQube Analysis
+          # Step 5: Prepare SonarQube Analysis
           - task: SonarQubePrepare@7
             inputs:
               SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
@@ -95,29 +65,43 @@ stages:
           - task: SonarQubePublish@7
             displayName: "Publish SonarQube Quality Gate Result"
 
-          # Step 11: Publish Cypress Test Results
+          # Step 6: Start Server for Cypress
+          - script: npx http-server -p 8080 &
+            displayName: "Start HTTP Server for Cypress (Port 8080)"
+            workingDirectory: $(System.DefaultWorkingDirectory) # Ini adalah $(Build.SourcesDirectory)
+
+          # Step 7: Run Cypress Tests
+          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
+            displayName: "Run Cypress E2E Tests"
+            env:
+              CYPRESS_BASE_URL: "http://localhost:8080"
+            continueOnError: true # Sebaiknya false jika ingin build gagal pada tes error
+
+          # Step 8: Publish Cypress Test Results
           - task: PublishTestResults@2
             inputs:
               testResultsFormat: "JUnit"
               testResultsFiles: "**/results/cypress-results-*.xml"
               mergeTestResults: true
-              failTaskOnFailedTests: true
+              failTaskOnFailedTests: true # Ini akan mengagalkan job jika ada tes yang gagal
             displayName: "Publish Cypress Test Results"
             condition: succeededOrFailed()
 
   # STAGE 2: Staging - Prepare Artifact
   - stage: Staging
     displayName: "2. Staging - Prepare Deploy Artifact"
-    dependsOn: Build_Test_Analyze
+    dependsOn: Build_Test_Analyze # Bergantung pada suksesnya stage Build
     condition: succeeded()
     jobs:
       - job: StagingJob
         displayName: "Create Release Artifact"
         steps:
+          # Langkah ini penting jika job berjalan pada agen yang berbeda atau konteks baru
+          # untuk mendapatkan akses ke source code yang mungkin dibutuhkan.
           - checkout: self
             displayName: "Checkout source code"
 
-          # Step 12: Copy Game Files to Staging Directory
+          # Step 9 (dari YAML lama): Copy Game Files to Staging Directory
           - task: CopyFiles@2
             inputs:
               SourceFolder: "$(Build.SourcesDirectory)"
@@ -133,7 +117,7 @@ stages:
               TargetFolder: "$(Build.ArtifactStagingDirectory)/game-files"
             displayName: "Copy game files to Staging Directory"
 
-          # Step 13: Publish Build Artifact
+          # Step 10 (dari YAML lama): Publish Build Artifact
           - task: PublishBuildArtifacts@1
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/game-files"
@@ -144,7 +128,7 @@ stages:
   # STAGE 3: Deploy - Deploy to Azure Static Web App
   - stage: Deploy_Static_Web_App
     displayName: "3. Deploy - Deploy to Azure Static Web App"
-    dependsOn: Staging
+    dependsOn: Staging # Bergantung pada suksesnya stage Staging
     condition: succeeded()
     jobs:
       - job: DeployJob
@@ -161,7 +145,7 @@ stages:
               app_location: ""
               api_location: ""
               output_location: ""
-              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)"
+              azure_static_web_apps_api_token: "$(AZURE_STATIC_WEB_APPS_API_TOKEN)" # Dari variable group Anda
               skip_app_build: true
               workingDirectory: $(System.ArtifactsDirectory)/HoleAndMoleGameDrop
             displayName: "🚀 Deploy to Azure Static Web App"
