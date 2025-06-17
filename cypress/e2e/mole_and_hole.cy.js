@@ -4,7 +4,8 @@ describe("Mole and Hole Game Functionality", () => {
   const shortDuration = "15";
 
   beforeEach(() => {
-    cy.visit("/"); // Mengunjungi baseUrl (http://localhost:8080)
+    cy.clearLocalStorage(); // Wajib untuk reset state
+    cy.visit("/"); // Gunakan '/' karena baseUrl sudah diatur
   });
 
   it("should load the game page with initial elements visible", () => {
@@ -179,7 +180,6 @@ describe("Mole and Hole Game Functionality", () => {
 
     // Klik tombol reset skor
     cy.get("#reset-scores-btn").click();
-    
 
     // Verifikasi pesan reset
     cy.get("#messageBoxText").should(

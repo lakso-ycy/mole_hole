@@ -2,34 +2,38 @@
   "name": "fp-pso-fleksibel",
   "version": "1.0.0",
   "description": "A simple Mole and Hole game built with HTML, CSS, and JS.",
-  "main": "instrumented/script.js",
+  "main": "script.js",
   "scripts": {
-    "pretest": "nyc instrument ./ ./instrumented",
-    "serve": "http-server . -p 8080",
-    "test": "cypress run --browser chrome",
-    "coverage": "nyc report --reporter=html && nyc report --reporter=text && nyc report --reporter=lcov",
+    "// --- CLEAN & PREPARE ---": "",
+    "clean": "rm -rf instrumented coverage .nyc_output results",
+    "prepare-test-env": "npm run clean && mkdir -p instrumented && npx nyc instrument ./script.js instrumented/script.js && cp index.html style.css package.json hammer-hit.png hammer.png README.md instrumented/ && cp -r img sounds instrumented/",
+    "// --- CORE TASKS ---": "",
     "lint": "eslint . --ext .js --ignore-pattern coverage && stylelint \"**/*.css\" \"!coverage/**/*.css\" --ignore-path .gitignore",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run --browser chrome",
-    "full": "npm run pretest && start cmd /k \"npm run serve\" && npm run test && npm run coverage"
+    "serve": "http-server . -p 8080",
+    "serve:instrumented": "http-server ./instrumented -p 8080",
+    "// --- CYPRESS TESTING ---": "",
+    "cy:run": "cypress run --browser chrome",
+    "cy:open": "cypress open",
+    "// --- LOCAL WORKFLOWS ---": "",
+    "test:coverage": "npm run prepare-test-env && npm run cy:run",
+    "dev": "npm run prepare-test-env && cypress open"
   },
   "nyc": {
-    "report-dir": "./coverage",
-    "temp-dir": "./.nyc_output",
-    "reporter": [
-      "text",
-      "html",
-      "lcov"
-    ],
     "all": true,
     "include": [
-      " script.js"
+      "script.js"
     ],
     "exclude": [
       "cypress/**",
       "node_modules/**",
-      "instrumented/**/!(*.js)"
-    ]
+      "instrumented/**"
+    ],
+    "reporter": [
+      "lcov",
+      "text",
+      "html"
+    ],
+    "report-dir": "coverage"
   },
   "repository": {
     "type": "git",

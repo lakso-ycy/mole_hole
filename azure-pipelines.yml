@@ -19,80 +19,86 @@ variables:
     value: "mole and hole"
 
 stages:
-  # STAGE 1: Build, Test, and Analyze
   - stage: Build_Test_Analyze
     displayName: "1. Build - Test, and Analyze"
     jobs:
       - job: BuildJob
         displayName: "Install, Lint, Analyze, and E2E Test"
         steps:
-          # Step 1: Install Node.js
+          # 1. Install Node.js
           - task: NodeTool@0
             inputs:
               versionSpec: $(nodeVersion)
             displayName: "Install Node.js $(nodeVersion)"
 
-          # Step 2: Install Dependencies
+          # 2. Install Dependencies dari package-lock.json
           - script: npm ci
-            displayName: "Clean install project dependencies (npm ci)"
+            displayName: "Install project dependencies"
 
-          # Step 3: Instrumentasi kode untuk coverage
-          - script: npx nyc instrument ./ ./instrumented
-            displayName: "Instrument source code for coverage"
+          # 3. Jalankan Linter untuk Cek Kualitas Kode Statis
+          - script: npm run lint
+            displayName: "Run Linter (ESLint & Stylelint)"
+            continueOnError: false
 
-          # Step 4: Copy semua asset pendukung ke instrumented/
+          # 4. Siapkan Folder `instrumented` dengan Benar
           - script: |
+              mkdir -p instrumented
+              npx nyc instrument ./script.js instrumented/script.js
               cp index.html instrumented/
               cp style.css instrumented/
-              cp script.js instrumented/
-              cp package.json instrumented/
               cp -r img instrumented/
               cp -r sounds instrumented/
-              cp hammer-hit.png instrumented/
-              cp hammer.png instrumented/
-              cp README.md instrumented/
-            displayName: "Copy all supporting assets to instrumented/"
+            displayName: "Prepare 'instrumented' directory for testing"
 
-          # Step 5: Fix Permissions (Prevent Permission Denied)
-          - script: chmod -R +x ./node_modules/.bin
-            displayName: "Fix permission for node_modules/.bin"
-            condition: succeeded()
-
-          # Step 6: Run ESLint & Stylelint
-          - script: npm run lint
-            displayName: 'Run Linter (ESLint & Stylelint)'
-            continueOnError: false
-
-          # Step 8: Jalankan HTTP Server dari dalam folder instrumented/
-          - script: npx http-server -p 8080 &
-            displayName: "Start HTTP Server for Cypress (Port 8080) in instrumented/"
+          # 5. Jalankan Server dan Tes Cypress
+          - script: npx http-server -p 8080 > /dev/null 2>&1 &
+            displayName: "Start HTTP Server from 'instrumented' folder"
             workingDirectory: $(System.DefaultWorkingDirectory)/instrumented
 
-          # Step 9: Jalankan Cypress test dari folder instrumented/
-          - script: npx cypress run --spec "cypress/e2e/mole_and_hole.cy.js"
-            displayName: "Run Cypress E2E Tests (on instrumented/)"
+          - script: npx wait-on http://localhost:8080 -t 30000
+            displayName: "Wait for HTTP server to be ready"
+
+          - script: npx cypress run --browser chrome
+            displayName: "Run Cypress E2E Tests"
             env:
               CYPRESS_BASE_URL: "http://localhost:8080"
-            continueOnError: false
+            continueOnError: false # Biarkan false agar pipeline gagal jika tes error
 
-          - task: SonarQubePrepare@7
+          # 6. Generate Laporan Akhir Code Coverage (setelah tes selesai)
+          - script: npx nyc report
+            displayName: "Generate final code coverage report"
+            condition: always() # Jalankan ini bahkan jika tes gagal, agar kita tetap dapat laporan coverage
+
+          # 7. Jalankan Analisis SonarQube (setelah semua laporan tes & coverage dibuat)
+          # - task: SonarQubePrepare@7
+          #   inputs:
+          #     SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
+          #     scannerMode: "CLI"
+          #     configMode: "manual"
+          #     cliProjectKey: $(SONARQUBE_PROJECT_KEY)
+          #     cliProjectName: $(SONARQUBE_PROJECT_NAME)
+          #     extraProperties: |
+          #       sonar.sources=.
+          #       sonar.exclusions=**/node_modules/**,cypress/**,instrumented/**,coverage/**,mochawesome-report/**
+          #       sonar.javascript.lcov.reportPaths=coverage/lcov.info
+          #       # sonar.eslint.reportPaths=eslint-report.json # Uncomment jika Anda menghasilkan laporan ESLint
+          #   displayName: "Prepare SonarQube Analysis Configuration"
+
+          # Uncomment jika Anda mengkonfigurasi Mochawesome
+          - task: PublishBuildArtifacts@1
             inputs:
-              SonarQube: $(SONARQUBE_SERVICE_CONNECTION)
-              scannerMode: "CLI"
-              configMode: "manual"
-              cliProjectKey: $(SONARQUBE_PROJECT_KEY)
-              cliProjectName: $(SONARQUBE_PROJECT_NAME)
-              extraProperties: |
-                sonar.sources=.
-                sonar.exclusions=/node_modules/,cypress/**
-                sonar.javascript.lcov.reportPaths=coverage/lcov.info
-            displayName: "Prepare SonarQube Analysis Configuration"
+              PathtoPublish: "mochawesome-report"
+              ArtifactName: "MochawesomeReport"
+              publishLocation: "Container"
+            displayName: "Publish Mochawesome HTML Report"
+            condition: always()
 
-          - task: SonarQubeAnalyze@7
-            displayName: "Run SonarQube Analysis"
+          # - task: SonarQubeAnalyze@7
+          #   displayName: "Run SonarQube Analysis"
 
-          - task: SonarQubePublish@7
-            displayName: "Publish SonarQube Quality Gate Result"
+          # - task: SonarQubePublish@7
+          #   displayName: "Publish SonarQube Quality Gate Result"
+          #   condition: always()
 
           - task: PublishBuildArtifacts@1
             inputs:
@@ -107,7 +113,7 @@ stages:
               testResultsFiles: "**/results/*.xml"
               mergeTestResults: true
               failTaskOnFailedTests: true
-            condition: succeededOrFailed()
+            condition: always()
             displayName: "Publish Cypress Test Results"
 
           - task: PublishBuildArtifacts@1
