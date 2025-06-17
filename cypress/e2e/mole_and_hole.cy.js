@@ -8,7 +8,7 @@ describe("Mole and Hole Game Functionality", () => {
   });
 
   it("should load the game page with initial elements visible", () => {
-    cy.get("h1").should("contain.text", "ZAIDAN!"); //
+    cy.get("h1").should("contain.text", "yo, If you can"); //
     cy.get(".start-btn").invoke("text").should("include", "Start");
     cy.get("#player-name").should("be.visible"); //
     cy.get(".start-btn").should("be.visible"); //
@@ -179,6 +179,7 @@ describe("Mole and Hole Game Functionality", () => {
 
     // Klik tombol reset skor
     cy.get("#reset-scores-btn").click();
+    
 
     // Verifikasi pesan reset
     cy.get("#messageBoxText").should(
@@ -200,6 +201,6 @@ describe("Mole and Hole Game Functionality", () => {
   });
 
   it("should have correct label on Reset Score button", () => {
-    cy.get("#reset-scores-btn").should("have.text", "reset");
+    cy.get("#reset-scores-btn").should("have.text", "Reset Score");
   });
 });

@@ -7,7 +7,7 @@
 /* Cursoraa default: palu biasa */
 html,
 body {
-  cursor: url('img/hammer.png'), auto;
+  cursor: url('hammer.png'), auto;
 }
 
 body {
@@ -27,7 +27,7 @@ body {
 
 /* Saat diklik: palu mukul */
 body.hammer-hit {
-  cursor: url('img/hammer-hit.png'), auto;
+  cursor: url('hammer-hit.png'), auto;
 }
 
 .container {
@@ -348,7 +348,7 @@ h1 {
 }
 
 .duration-btn.active {
-  background-color: #38a169; /* #38a169 */
+  background-color: #38a169;
   border-color: #2f855a;
   color: #fff;
   font-weight: bold;
@@ -419,7 +419,7 @@ h1 {
   background: url("img/mole.png") bottom center no-repeat;
   background-size: 60%;
   transition: top 0.4s;
-  cursor: url('img/hammer.png'), pointer;
+  cursor: url('hammer.png'), pointer;
   z-index: 2;
 }
 
